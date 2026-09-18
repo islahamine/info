@@ -1,14 +1,5 @@
 {
-  "1APIC": [
-    {
-      "id": "ts-mu6eg0ar",
-      "title": "ts",
-      "subject": "tet",
-      "courseFile": "images/1APIC/ts-mu6eg0ar-cours.png",
-      "exerciseFile": "images/1APIC/ts-mu6eg0ar-exo.png",
-      "date": "2026-09-18T03:29:01.837Z"
-    }
-  ],
+  "1APIC": [],
   "2APIC": [],
   "3APIC": []
 }
