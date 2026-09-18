@@ -8,7 +8,15 @@
       "exerciseFile": "images/1APIC/-mu6d3cgb-exo.jpeg"
     }
   ],
-  "2APIC": [],
+  "2APIC": [
+    {
+      "id": "dzdzdz-mu6din1q",
+      "title": "dzdzdz",
+      "subject": "zzzzzzzzzzz",
+      "courseFile": "images/2APIC/dzdzdz-mu6din1q-cours.jpg",
+      "exerciseFile": "images/2APIC/dzdzdz-mu6din1q-exo.jpg"
+    }
+  ],
   "3APIC": [
     {
       "id": "l-environnement-du-power-point-mu6g8osu",
