@@ -50,6 +50,7 @@
   .b1 { background: #4f46e5; } .b2 { background: #059669; } .b3 { background: #ea580c; }
   .level-card .txt h2 { margin: 0 0 2px; font-size: 1.1rem; }
   .level-card .txt p { margin: 0; color: var(--muted); font-size: 0.87rem; }
+  .level-card .txt p .count { color: var(--accent); font-weight: 600; }
   .level-card .arrow { margin-left: auto; color: var(--muted); font-size: 1.3rem; }
 
   /* ---- Back + search ---- */
@@ -81,6 +82,12 @@
   .subject-tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); font-weight: 700; }
   .course-item h3 { margin: 2px 0 0; font-size: 1rem; line-height: 1.3; }
   .course-item .arrow { color: var(--muted); font-size: 1.3rem; flex-shrink: 0; }
+  .new-badge {
+    display: inline-block; background: #dc2626; color: white; font-size: 0.62rem;
+    font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-left: 7px;
+    letter-spacing: 0.03em; vertical-align: middle;
+  }
+  .date-text { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
 
   .empty-state, .error-state { text-align: center; color: var(--muted); padding: 50px 20px; }
 
@@ -163,17 +170,17 @@
   <div class="levels" id="levelScreen">
     <div class="level-card" data-level="1APIC">
       <span class="badge b1">1</span>
-      <span class="txt"><h2>1APIC</h2><p>1ère année</p></span>
+      <span class="txt"><h2>1APIC</h2><p>1ère année<span class="count" id="count-1APIC"></span></p></span>
       <span class="arrow">›</span>
     </div>
     <div class="level-card" data-level="2APIC">
       <span class="badge b2">2</span>
-      <span class="txt"><h2>2APIC</h2><p>2ème année</p></span>
+      <span class="txt"><h2>2APIC</h2><p>2ème année<span class="count" id="count-2APIC"></span></p></span>
       <span class="arrow">›</span>
     </div>
     <div class="level-card" data-level="3APIC">
       <span class="badge b3">3</span>
-      <span class="txt"><h2>3APIC</h2><p>3ème année</p></span>
+      <span class="txt"><h2>3APIC</h2><p>3ème année<span class="count" id="count-3APIC"></span></p></span>
       <span class="arrow">›</span>
     </div>
   </div>
@@ -191,6 +198,7 @@
     <div class="sheet-handle"></div>
     <h3 id="modalTitle"></h3>
     <span class="subject-tag" id="modalSubject"></span>
+    <div class="date-text" id="modalDate" style="margin-bottom:14px;"></div>
 
     <div class="download-row course">
       <img id="modalCourseImg" alt="Cours" loading="lazy" decoding="async">
@@ -226,10 +234,36 @@
   function iconFor(subject) { return SUBJECT_ICONS[subject] || "📄"; }
 
   const fallbackData = {
-    "1APIC": [{ id: "algo1", title: "Introduction aux algorithmes", subject: "Algorithmique", courseFile: "images/1APIC/algo1-cours.jpg", exerciseFile: "images/1APIC/algo1-exo.jpg" }],
-    "2APIC": [{ id: "docker1", title: "Introduction à Docker", subject: "DevOps", courseFile: "images/2APIC/docker1-cours.jpg", exerciseFile: "images/2APIC/docker1-exo.jpg" }],
-    "3APIC": [{ id: "spring1", title: "Spring Boot - les bases", subject: "JEE / Spring", courseFile: "images/3APIC/spring1-cours.jpg", exerciseFile: "images/3APIC/spring1-exo.jpg" }]
+    "1APIC": [{ id: "algo1", title: "Introduction aux algorithmes", subject: "Algorithmique", courseFile: "images/1APIC/algo1-cours.jpg", exerciseFile: "images/1APIC/algo1-exo.jpg", date: "2026-01-15" }],
+    "2APIC": [{ id: "docker1", title: "Introduction à Docker", subject: "DevOps", courseFile: "images/2APIC/docker1-cours.jpg", exerciseFile: "images/2APIC/docker1-exo.jpg", date: "2026-01-15" }],
+    "3APIC": [{ id: "spring1", title: "Spring Boot - les bases", subject: "JEE / Spring", courseFile: "images/3APIC/spring1-cours.jpg", exerciseFile: "images/3APIC/spring1-exo.jpg", date: "2026-01-15" }]
   };
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    try {
+      return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(iso));
+    } catch (e) { return ''; }
+  }
+
+  function getViewedSet() {
+    try { return new Set(JSON.parse(localStorage.getItem('viewedCourseIds') || '[]')); }
+    catch (e) { return new Set(); }
+  }
+  function markViewed(id) {
+    const set = getViewedSet();
+    if (!set.has(id)) {
+      set.add(id);
+      localStorage.setItem('viewedCourseIds', JSON.stringify([...set]));
+    }
+  }
+
+  function updateLevelCounts() {
+    ['1APIC', '2APIC', '3APIC'].forEach(lvl => {
+      const el = document.getElementById('count-' + lvl);
+      if (el) el.textContent = ' • ' + (allData[lvl] || []).length + ' cours';
+    });
+  }
 
   function showSkeleton() {
     list.innerHTML = Array(4).fill(`
@@ -272,14 +306,17 @@
       : "Aucun cours trouvé.";
 
     const frag = document.createDocumentFragment();
+    const viewed = getViewedSet();
     courses.forEach(c => {
+      const isNew = !viewed.has(c.id);
       const item = document.createElement('div');
       item.className = 'course-item';
       item.innerHTML = `
         <span class="subj-icon">${iconFor(c.subject)}</span>
         <span class="txt">
           <span class="subject-tag">${c.subject}</span>
-          <h3>${c.title}</h3>
+          <h3>${c.title}${isNew ? '<span class="new-badge">NOUVEAU</span>' : ''}</h3>
+          ${c.date ? `<div class="date-text">${formatDate(c.date)}</div>` : ''}
         </span>
         <span class="arrow">›</span>`;
       item.addEventListener('click', () => openSheet(c));
@@ -291,11 +328,14 @@
   function openSheet(c) {
     document.getElementById('modalTitle').textContent = c.title;
     document.getElementById('modalSubject').textContent = c.subject;
+    document.getElementById('modalDate').textContent = c.date ? ('Ajouté le ' + formatDate(c.date)) : '';
     document.getElementById('modalCourseImg').src = c.courseFile;
     document.getElementById('modalCourseLink').href = c.courseFile;
     document.getElementById('modalExerciseImg').src = c.exerciseFile;
     document.getElementById('modalExerciseLink').href = c.exerciseFile;
     overlay.classList.add('open');
+    markViewed(c.id);
+    renderCourses();
   }
 
   document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
@@ -314,7 +354,7 @@
   searchInput.addEventListener('input', renderCourses);
 
   showSkeleton();
-  loadData();
+  loadData().then(updateLevelCounts);
 </script>
 
 </body>

@@ -310,7 +310,7 @@
         await uploadImage(conf, exerciseFilePath, exerciseFile, `Ajout image exercices: ${title}`);
 
         if (!currentData[level]) currentData[level] = [];
-        currentData[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath });
+        currentData[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath, date: new Date().toISOString() });
 
         await saveDataFile(conf, `Ajout cours: ${title} (${level})`);
         setStatus('status', 'ok', `"${title}" publié avec succès dans ${level} !`);
