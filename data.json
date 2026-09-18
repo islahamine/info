@@ -1,5 +1,13 @@
 {
-  "1APIC": [],
+  "1APIC": [
+    {
+      "id": "-mu6d3cgb",
+      "title": ".",
+      "subject": "Correction du test diagnostique",
+      "courseFile": "images/1APIC/-mu6d3cgb-cours.jpeg",
+      "exerciseFile": "images/1APIC/-mu6d3cgb-exo.jpeg"
+    }
+  ],
   "2APIC": [],
   "3APIC": [
     {
