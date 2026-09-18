@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Administration - Cours</title>
 <style>
-  :root { --bg:#f5f6f8; --card-bg:#fff; --text:#1a1a2e; --muted:#6b7280; --accent:#4f46e5; --accent-hover:#4338ca; --border:#e5e7eb; --danger:#dc2626; --ok:#059669; }
+  :root { --bg:#f5f6f8; --card-bg:#fff; --text:#1a1a2e; --muted:#6b7280; --accent:#4f46e5; --accent-hover:#4338ca; --border:#e5e7eb; --danger:#dc2626; --danger-hover:#b91c1c; --ok:#059669; }
   * { box-sizing: border-box; }
   body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
   header { background:var(--accent); color:white; padding:28px 20px; text-align:center; }
@@ -29,18 +29,48 @@
   }
   button:hover { background:var(--accent-hover); }
   button:disabled { opacity:0.6; cursor:not-allowed; }
+  button.secondary { background:none; color:var(--muted); margin-top:8px; }
+  button.secondary:hover { background:#f0f0f4; }
   .status { margin-top:14px; font-size:0.88rem; padding:10px 12px; border-radius:8px; display:none; }
   .status.ok { background:#d1fae5; color:#065f46; display:block; }
   .status.err { background:#fee2e2; color:#991b1b; display:block; }
   .status.loading { background:#e0e7ff; color:#3730a3; display:block; }
   .saved-badge { font-size:0.78rem; color:var(--ok); margin-left:6px; }
+
+  /* Existing courses list */
+  .refresh-btn { width:auto; display:inline-block; padding:8px 14px; font-size:0.85rem; margin:0; }
+  .course-row {
+    display:flex; align-items:center; gap:10px; border:1px solid var(--border); border-radius:10px;
+    padding:12px; margin-top:10px;
+  }
+  .course-row .level-tag {
+    font-size:0.72rem; font-weight:700; color:white; background:var(--accent);
+    padding:3px 8px; border-radius:6px; flex-shrink:0;
+  }
+  .course-row .info { flex:1; min-width:0; }
+  .course-row .info .subject { font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.03em; }
+  .course-row .info .title { font-size:0.95rem; font-weight:600; }
+  .course-row .actions { display:flex; gap:6px; flex-shrink:0; }
+  .icon-btn {
+    width:auto; margin:0; padding:8px 10px; font-size:0.85rem; border-radius:8px;
+  }
+  .icon-btn.edit { background:#eef0fb; color:var(--accent); }
+  .icon-btn.edit:hover { background:#e0e3f7; }
+  .icon-btn.delete { background:#fee2e2; color:var(--danger); }
+  .icon-btn.delete:hover { background:#fecaca; }
+  .empty-hint { color:var(--muted); font-size:0.88rem; text-align:center; padding:14px 0; }
+  .editing-banner {
+    display:none; background:#fef3c7; color:#92400e; font-size:0.85rem;
+    padding:10px 12px; border-radius:8px; margin-bottom:14px;
+  }
+  .editing-banner.show { display:block; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>🔧 Administration des cours</h1>
-  <p>Ajoutez un cours et ses exercices — publiés automatiquement sur le site</p>
+  <p>Ajoutez, modifiez ou supprimez un cours — publié automatiquement sur le site</p>
 </header>
 
 <main>
@@ -60,7 +90,8 @@
   </div>
 
   <div class="box">
-    <h2>2. Ajouter un cours</h2>
+    <h2 id="formTitle">2. Ajouter un cours</h2>
+    <div class="editing-banner" id="editingBanner">✏️ Modification d'un cours existant.</div>
     <label>Niveau</label>
     <select id="level">
       <option value="1APIC">1APIC</option>
@@ -77,19 +108,31 @@
         <input type="text" id="title" placeholder="ex: Introduction à Docker">
       </div>
     </div>
-    <label>Image du cours (photo/scan)</label>
+    <label id="courseImgLabel">Image du cours (photo/scan)</label>
     <input type="file" id="courseImage" accept="image/*">
-    <label>Image des exercices (photo/scan)</label>
+    <label id="exerciseImgLabel">Image des exercices (photo/scan)</label>
     <input type="file" id="exerciseImage" accept="image/*">
     <button id="submitBtn">Publier ce cours</button>
+    <button class="secondary" id="cancelEditBtn" style="display:none;">Annuler la modification</button>
     <div class="status" id="status"></div>
+  </div>
+
+  <div class="box">
+    <h2>3. Cours existants</h2>
+    <p class="hint">Modifiez ou supprimez un cours déjà publié.</p>
+    <button class="refresh-btn" id="refreshBtn">🔄 Charger / actualiser la liste</button>
+    <div id="courseList"></div>
+    <div class="status" id="listStatus"></div>
   </div>
 </main>
 
 <script>
   const $ = id => document.getElementById(id);
+  let currentData = {};
+  let currentDataSha = null;
+  let editingContext = null; // { level, id } when editing an existing course
 
-  // Load saved config
+  // ---- Config ----
   const cfg = JSON.parse(localStorage.getItem('ghConfig') || '{}');
   if (cfg.owner) { $('owner').value = cfg.owner; $('ownerSaved').textContent = '✓ enregistré'; }
   if (cfg.repo) $('repo').value = cfg.repo;
@@ -100,11 +143,13 @@
     const conf = { owner: $('owner').value.trim(), repo: $('repo').value.trim(), branch: $('branch').value.trim() || 'main', token: $('token').value.trim() };
     localStorage.setItem('ghConfig', JSON.stringify(conf));
     $('ownerSaved').textContent = '✓ enregistré';
-    setStatus('ok', 'Connexion enregistrée dans ce navigateur.');
+    setStatus('status', 'ok', 'Connexion enregistrée dans ce navigateur.');
   });
 
-  function setStatus(type, msg) {
-    const el = $('status');
+  function getConf() { return JSON.parse(localStorage.getItem('ghConfig') || '{}'); }
+
+  function setStatus(elId, type, msg) {
+    const el = $(elId);
     el.className = 'status ' + type;
     el.textContent = msg;
   }
@@ -118,15 +163,11 @@
     });
   }
 
-  async function ghRequest(conf, path, method, body) {
+  async function ghPut(conf, path, body) {
     const res = await fetch(`https://api.github.com/repos/${conf.owner}/${conf.repo}/contents/${path}`, {
-      method,
-      headers: {
-        'Authorization': `Bearer ${conf.token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: body ? JSON.stringify(body) : undefined
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${conf.token}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -135,21 +176,82 @@
     return res.json();
   }
 
+  async function ghDelete(conf, path, body) {
+    const res = await fetch(`https://api.github.com/repos/${conf.owner}/${conf.repo}/contents/${path}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${conf.token}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    return res.ok;
+  }
+
   async function getFileIfExists(conf, path) {
     try {
       const res = await fetch(`https://api.github.com/repos/${conf.owner}/${conf.repo}/contents/${path}?ref=${conf.branch}`, {
         headers: { 'Authorization': `Bearer ${conf.token}`, 'Accept': 'application/vnd.github+json' }
       });
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error('Erreur de lecture de ' + path);
+      if (!res.ok) return null;
       return res.json();
     } catch (e) { return null; }
   }
 
+  async function uploadImage(conf, path, file, message) {
+    const b64 = await fileToBase64(file);
+    const existing = await getFileIfExists(conf, path);
+    await ghPut(conf, path, { message, content: b64, branch: conf.branch, sha: existing ? existing.sha : undefined });
+  }
+
+  async function loadDataFile(conf) {
+    const file = await getFileIfExists(conf, 'data.json');
+    if (!file) { currentData = {}; currentDataSha = null; return; }
+    currentData = JSON.parse(decodeURIComponent(escape(atob(file.content))));
+    currentDataSha = file.sha;
+  }
+
+  async function saveDataFile(conf, message) {
+    const newContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2))));
+    const result = await ghPut(conf, 'data.json', { message, content: newContent, branch: conf.branch, sha: currentDataSha || undefined });
+    currentDataSha = result.content.sha;
+  }
+
+  // ---- Form: add / edit ----
+  function resetForm() {
+    editingContext = null;
+    $('formTitle').textContent = '2. Ajouter un cours';
+    $('editingBanner').classList.remove('show');
+    $('submitBtn').textContent = 'Publier ce cours';
+    $('cancelEditBtn').style.display = 'none';
+    $('courseImgLabel').textContent = 'Image du cours (photo/scan)';
+    $('exerciseImgLabel').textContent = 'Image des exercices (photo/scan)';
+    $('level').value = '1APIC';
+    $('subject').value = '';
+    $('title').value = '';
+    $('courseImage').value = '';
+    $('exerciseImage').value = '';
+  }
+
+  function startEdit(level, course) {
+    editingContext = { level, id: course.id, courseFile: course.courseFile, exerciseFile: course.exerciseFile };
+    $('formTitle').textContent = '2. Modifier un cours';
+    $('editingBanner').classList.add('show');
+    $('submitBtn').textContent = 'Enregistrer les modifications';
+    $('cancelEditBtn').style.display = 'block';
+    $('courseImgLabel').textContent = 'Nouvelle image du cours (laisser vide pour garder l\'actuelle)';
+    $('exerciseImgLabel').textContent = 'Nouvelle image des exercices (laisser vide pour garder l\'actuelle)';
+    $('level').value = level;
+    $('subject').value = course.subject;
+    $('title').value = course.title;
+    $('courseImage').value = '';
+    $('exerciseImage').value = '';
+    window.scrollTo({ top: $('formTitle').offsetTop - 20, behavior: 'smooth' });
+  }
+
+  $('cancelEditBtn').addEventListener('click', resetForm);
+
   $('submitBtn').addEventListener('click', async () => {
-    const conf = JSON.parse(localStorage.getItem('ghConfig') || '{}');
+    const conf = getConf();
     if (!conf.owner || !conf.repo || !conf.token) {
-      setStatus('err', 'Veuillez d\'abord enregistrer la connexion GitHub (étape 1).');
+      setStatus('status', 'err', 'Veuillez d\'abord enregistrer la connexion GitHub (étape 1).');
       return;
     }
     const level = $('level').value;
@@ -158,63 +260,138 @@
     const courseFile = $('courseImage').files[0];
     const exerciseFile = $('exerciseImage').files[0];
 
-    if (!subject || !title || !courseFile || !exerciseFile) {
-      setStatus('err', 'Veuillez remplir tous les champs et choisir les deux images.');
+    if (!subject || !title) {
+      setStatus('status', 'err', 'Veuillez remplir la matière et le titre.');
+      return;
+    }
+    if (!editingContext && (!courseFile || !exerciseFile)) {
+      setStatus('status', 'err', 'Veuillez choisir les deux images pour un nouveau cours.');
       return;
     }
 
     $('submitBtn').disabled = true;
-    setStatus('loading', 'Publication en cours...');
+    setStatus('status', 'loading', 'Publication en cours...');
 
     try {
-      const id = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
-      const courseExt = courseFile.name.split('.').pop();
-      const exerciseExt = exerciseFile.name.split('.').pop();
-      const courseFilePath = `images/${level}/${id}-cours.${courseExt}`;
-      const exerciseFilePath = `images/${level}/${id}-exo.${exerciseExt}`;
+      await loadDataFile(conf); // always work from the freshest version
 
-      // 1. Upload course image
-      const courseB64 = await fileToBase64(courseFile);
-      await ghRequest(conf, courseFilePath, 'PUT', {
-        message: `Ajout image cours: ${title}`,
-        content: courseB64,
-        branch: conf.branch
-      });
+      if (editingContext) {
+        const list = currentData[editingContext.level] || [];
+        const entry = list.find(c => c.id === editingContext.id);
+        if (!entry) throw new Error('Cours introuvable (a-t-il déjà été supprimé ailleurs ?).');
 
-      // 2. Upload exercise image
-      const exerciseB64 = await fileToBase64(exerciseFile);
-      await ghRequest(conf, exerciseFilePath, 'PUT', {
-        message: `Ajout image exercices: ${title}`,
-        content: exerciseB64,
-        branch: conf.branch
-      });
+        entry.subject = subject;
+        entry.title = title;
 
-      // 3. Update data.json
-      const dataFile = await getFileIfExists(conf, 'data.json');
-      let data = {};
-      if (dataFile) {
-        data = JSON.parse(decodeURIComponent(escape(atob(dataFile.content))));
+        if (courseFile) {
+          await uploadImage(conf, entry.courseFile, courseFile, `Mise à jour image cours: ${title}`);
+        }
+        if (exerciseFile) {
+          await uploadImage(conf, entry.exerciseFile, exerciseFile, `Mise à jour image exercices: ${title}`);
+        }
+
+        // Level changed: move entry to the new level's array
+        if (level !== editingContext.level) {
+          currentData[editingContext.level] = list.filter(c => c.id !== editingContext.id);
+          if (!currentData[level]) currentData[level] = [];
+          currentData[level].push(entry);
+        }
+
+        await saveDataFile(conf, `Modification cours: ${title}`);
+        setStatus('status', 'ok', `"${title}" mis à jour avec succès !`);
+      } else {
+        const id = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
+        const courseExt = courseFile.name.split('.').pop();
+        const exerciseExt = exerciseFile.name.split('.').pop();
+        const courseFilePath = `images/${level}/${id}-cours.${courseExt}`;
+        const exerciseFilePath = `images/${level}/${id}-exo.${exerciseExt}`;
+
+        await uploadImage(conf, courseFilePath, courseFile, `Ajout image cours: ${title}`);
+        await uploadImage(conf, exerciseFilePath, exerciseFile, `Ajout image exercices: ${title}`);
+
+        if (!currentData[level]) currentData[level] = [];
+        currentData[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath });
+
+        await saveDataFile(conf, `Ajout cours: ${title} (${level})`);
+        setStatus('status', 'ok', `"${title}" publié avec succès dans ${level} !`);
       }
-      if (!data[level]) data[level] = [];
-      data[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath });
 
-      const newContent = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-      await ghRequest(conf, 'data.json', 'PUT', {
-        message: `Ajout cours: ${title} (${level})`,
-        content: newContent,
-        branch: conf.branch,
-        sha: dataFile ? dataFile.sha : undefined
-      });
-
-      setStatus('ok', `"${title}" publié avec succès dans ${level} !`);
-      $('subject').value = ''; $('title').value = '';
-      $('courseImage').value = ''; $('exerciseImage').value = '';
+      resetForm();
+      renderCourseList();
     } catch (e) {
-      setStatus('err', 'Erreur : ' + e.message);
+      setStatus('status', 'err', 'Erreur : ' + e.message);
     } finally {
       $('submitBtn').disabled = false;
     }
   });
+
+  // ---- Existing courses list ----
+  async function renderCourseList() {
+    const conf = getConf();
+    if (!conf.owner || !conf.repo || !conf.token) {
+      setStatus('listStatus', 'err', 'Veuillez d\'abord enregistrer la connexion GitHub (étape 1).');
+      return;
+    }
+    setStatus('listStatus', 'loading', 'Chargement...');
+    try {
+      await loadDataFile(conf);
+      const container = $('courseList');
+      container.innerHTML = '';
+      let total = 0;
+      ['1APIC', '2APIC', '3APIC'].forEach(level => {
+        (currentData[level] || []).forEach(course => {
+          total++;
+          const row = document.createElement('div');
+          row.className = 'course-row';
+          row.innerHTML = `
+            <span class="level-tag">${level}</span>
+            <span class="info">
+              <span class="subject">${course.subject}</span>
+              <div class="title">${course.title}</div>
+            </span>
+            <span class="actions">
+              <button class="icon-btn edit">✏️</button>
+              <button class="icon-btn delete">🗑️</button>
+            </span>`;
+          row.querySelector('.edit').addEventListener('click', () => startEdit(level, course));
+          row.querySelector('.delete').addEventListener('click', () => deleteCourse(level, course));
+          container.appendChild(row);
+        });
+      });
+      if (total === 0) container.innerHTML = '<div class="empty-hint">Aucun cours publié pour le moment.</div>';
+      $('listStatus').className = 'status';
+      $('listStatus').textContent = '';
+    } catch (e) {
+      setStatus('listStatus', 'err', 'Erreur : ' + e.message);
+    }
+  }
+
+  async function deleteCourse(level, course) {
+    if (!confirm(`Supprimer "${course.title}" (${level}) ? Cette action est définitive.`)) return;
+    const conf = getConf();
+    setStatus('listStatus', 'loading', 'Suppression en cours...');
+    try {
+      await loadDataFile(conf);
+      currentData[level] = (currentData[level] || []).filter(c => c.id !== course.id);
+      await saveDataFile(conf, `Suppression cours: ${course.title}`);
+
+      // Best-effort: remove the image files too
+      const courseImg = await getFileIfExists(conf, course.courseFile);
+      if (courseImg) await ghDelete(conf, course.courseFile, { message: `Suppression image cours: ${course.title}`, sha: courseImg.sha, branch: conf.branch });
+      const exerciseImg = await getFileIfExists(conf, course.exerciseFile);
+      if (exerciseImg) await ghDelete(conf, course.exerciseFile, { message: `Suppression image exercices: ${course.title}`, sha: exerciseImg.sha, branch: conf.branch });
+
+      if (editingContext && editingContext.id === course.id) resetForm();
+      setStatus('listStatus', 'ok', `"${course.title}" supprimé.`);
+      renderCourseList();
+    } catch (e) {
+      setStatus('listStatus', 'err', 'Erreur : ' + e.message);
+    }
+  }
+
+  $('refreshBtn').addEventListener('click', renderCourseList);
+
+  if (cfg.owner && cfg.token) renderCourseList();
 </script>
 
 </body>
