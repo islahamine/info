@@ -1,11 +1,36 @@
 {
   "1APIC": [
-    { "id": "algo1", "title": "Introduction aux algorithmes", "subject": "Algorithmique", "courseFile": "images/1APIC/algo1-cours.jpg", "exerciseFile": "images/1APIC/algo1-exo.jpg" }
+    {
+      "id": "algo1",
+      "title": "Introduction aux algorithmes",
+      "subject": "Algorithmique",
+      "courseFile": "images/1APIC/algo1-cours.jpg",
+      "exerciseFile": "images/1APIC/algo1-exo.jpg"
+    },
+    {
+      "id": "cours-1-mu6ei9m7",
+      "title": "cours 1",
+      "subject": "Pré AO",
+      "courseFile": "images/1APIC/cours-1-mu6ei9m7-cours.jpeg",
+      "exerciseFile": "images/1APIC/cours-1-mu6ei9m7-exo.jpeg"
+    }
   ],
   "2APIC": [
-    { "id": "docker1", "title": "Introduction à Docker", "subject": "DevOps", "courseFile": "images/2APIC/docker1-cours.jpg", "exerciseFile": "images/2APIC/docker1-exo.jpg" }
+    {
+      "id": "docker1",
+      "title": "Introduction à Docker",
+      "subject": "DevOps",
+      "courseFile": "images/2APIC/docker1-cours.jpg",
+      "exerciseFile": "images/2APIC/docker1-exo.jpg"
+    }
   ],
   "3APIC": [
-    { "id": "spring1", "title": "Spring Boot - les bases", "subject": "JEE / Spring", "courseFile": "images/3APIC/spring1-cours.jpg", "exerciseFile": "images/3APIC/spring1-exo.jpg" }
+    {
+      "id": "spring1",
+      "title": "Spring Boot - les bases",
+      "subject": "JEE / Spring",
+      "courseFile": "images/3APIC/spring1-cours.jpg",
+      "exerciseFile": "images/3APIC/spring1-exo.jpg"
+    }
   ]
 }
