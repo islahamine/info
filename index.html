@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Cours</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card-bg: #ffffff; --text: #1a1a2e;
+    --muted: #6b7280; --accent: #4f46e5; --accent-hover: #4338ca;
+    --accent2: #059669; --accent2-hover: #047857; --border: #e5e7eb;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    background: var(--accent); color: white;
+    padding: 20px 16px; text-align: center;
+    position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { margin: 0; font-size: 1.25rem; }
+
+  main { padding: 16px; padding-bottom: 40px; max-width: 480px; margin: 0 auto; }
+
+  /* --- Levels: big stacked buttons --- */
+  .levels { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+  .level-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px 18px; display: flex; align-items: center; gap: 16px;
+    cursor: pointer; user-select: none;
+  }
+  .level-card:active { background: #ececf3; }
+  .level-card .icon { font-size: 2rem; flex-shrink: 0; }
+  .level-card .txt h2 { margin: 0 0 2px; font-size: 1.15rem; }
+  .level-card .txt p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .level-card .arrow { margin-left: auto; color: var(--muted); font-size: 1.3rem; }
+
+  /* --- Back + search --- */
+  .back-btn {
+    display: flex; align-items: center; gap: 6px; background: none; border: none;
+    color: var(--accent); font-size: 1rem; font-weight: 600; cursor: pointer;
+    padding: 8px 0; margin-bottom: 6px; -webkit-tap-highlight-color: transparent;
+  }
+  .search-wrap { position: sticky; top: 62px; background: var(--bg); padding: 6px 0 12px; z-index: 5; }
+  .search-wrap input {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: 12px; font-size: 1rem; background: var(--card-bg); color: var(--text);
+  }
+
+  /* --- Course list: single column, tap-friendly --- */
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .course-item {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; display: flex; align-items: center; gap: 12px;
+    cursor: pointer; user-select: none;
+  }
+  .course-item:active { background: #ececf3; }
+  .course-item .bookicon { font-size: 1.6rem; flex-shrink: 0; }
+  .course-item .txt { flex: 1; min-width: 0; }
+  .course-item .subject-tag {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--accent); font-weight: 700;
+  }
+  .course-item h3 { margin: 2px 0 0; font-size: 1rem; line-height: 1.3; }
+  .course-item .arrow { color: var(--muted); font-size: 1.3rem; flex-shrink: 0; }
+
+  .empty-state { text-align: center; color: var(--muted); padding: 50px 20px; }
+
+  /* --- Bottom sheet (mobile-friendly modal) --- */
+  .sheet-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 50;
+  }
+  .sheet-overlay.open { display: block; }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card-bg);
+    border-radius: 20px 20px 0 0; padding: 20px 18px calc(24px + env(safe-area-inset-bottom));
+    max-height: 85vh; overflow-y: auto;
+    transform: translateY(100%); transition: transform 0.25s ease;
+  }
+  .sheet-overlay.open .sheet { transform: translateY(0); }
+  .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 16px; }
+  .sheet h3 { margin: 0 0 4px; font-size: 1.15rem; }
+  .sheet .subject-tag { display: block; color: var(--accent); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; margin-bottom: 18px; }
+
+  .download-row {
+    display: flex; align-items: center; gap: 14px;
+    border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  }
+  .download-row img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: #eef0f4; flex-shrink: 0; }
+  .download-row .label { flex: 1; font-weight: 600; font-size: 1rem; }
+  .download-row a.btn {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    color: white; padding: 10px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600;
+  }
+  .download-row.course a.btn { background: var(--accent); }
+  .download-row.exercise a.btn { background: var(--accent2); }
+
+  .sheet-close {
+    display: block; width: 100%; text-align: center; padding: 12px;
+    background: none; border: none; color: var(--muted); font-size: 0.95rem; margin-top: 4px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14151f; --card-bg: #1e2030; --text: #e5e7eb; --muted: #9ca3af; --border: #2e3040;
+    }
+    .level-card:active, .course-item:active { background: #262842; }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14151f; --card-bg: #1e2030; --text: #e5e7eb; --muted: #9ca3af; --border: #2e3040;
+  }
+</style>
+</head>
+<body>
+
+<header><h1>📚 Cours</h1></header>
+
+<main>
+  <div class="levels" id="levelScreen">
+    <div class="level-card" data-level="1APIC">
+      <span class="icon">1️⃣</span>
+      <span class="txt"><h2>1APIC</h2><p>1ère année</p></span>
+      <span class="arrow">›</span>
+    </div>
+    <div class="level-card" data-level="2APIC">
+      <span class="icon">2️⃣</span>
+      <span class="txt"><h2>2APIC</h2><p>2ème année</p></span>
+      <span class="arrow">›</span>
+    </div>
+    <div class="level-card" data-level="3APIC">
+      <span class="icon">3️⃣</span>
+      <span class="txt"><h2>3APIC</h2><p>3ème année</p></span>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <div id="courseScreen" style="display:none;">
+    <button class="back-btn" id="backBtn">‹ Niveaux</button>
+    <div class="search-wrap"><input type="text" id="searchInput" placeholder="Rechercher..."></div>
+    <div class="list" id="courseList"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">Aucun cours trouvé.</div>
+  </div>
+</main>
+
+<div class="sheet-overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3 id="modalTitle"></h3>
+    <span class="subject-tag" id="modalSubject"></span>
+
+    <div class="download-row course">
+      <img id="modalCourseImg" alt="Cours">
+      <span class="label">📘 Cours</span>
+      <a class="btn" id="modalCourseLink" download>⬇</a>
+    </div>
+    <div class="download-row exercise">
+      <img id="modalExerciseImg" alt="Exercices">
+      <span class="label">✏️ Exercices</span>
+      <a class="btn" id="modalExerciseLink" download>⬇</a>
+    </div>
+
+    <button class="sheet-close" id="modalClose">Fermer</button>
+  </div>
+</div>
+
+<script>
+  let allData = {};
+  let currentLevel = null;
+
+  const levelScreen = document.getElementById('levelScreen');
+  const courseScreen = document.getElementById('courseScreen');
+  const list = document.getElementById('courseList');
+  const emptyState = document.getElementById('emptyState');
+  const searchInput = document.getElementById('searchInput');
+  const overlay = document.getElementById('overlay');
+
+  const fallbackData = {
+    "1APIC": [{ id: "algo1", title: "Introduction aux algorithmes", subject: "Algorithmique", courseFile: "images/1APIC/algo1-cours.jpg", exerciseFile: "images/1APIC/algo1-exo.jpg" }],
+    "2APIC": [{ id: "docker1", title: "Introduction à Docker", subject: "DevOps", courseFile: "images/2APIC/docker1-cours.jpg", exerciseFile: "images/2APIC/docker1-exo.jpg" }],
+    "3APIC": [{ id: "spring1", title: "Spring Boot - les bases", subject: "JEE / Spring", courseFile: "images/3APIC/spring1-cours.jpg", exerciseFile: "images/3APIC/spring1-exo.jpg" }]
+  };
+
+  async function loadData() {
+    try {
+      const res = await fetch('data.json', { cache: 'no-store' });
+      allData = await res.json();
+    } catch (e) {
+      allData = fallbackData;
+    }
+  }
+
+  function openLevel(level) {
+    currentLevel = level;
+    levelScreen.style.display = 'none';
+    courseScreen.style.display = 'block';
+    searchInput.value = '';
+    renderCourses();
+  }
+
+  function renderCourses() {
+    const q = searchInput.value.trim().toLowerCase();
+    const courses = (allData[currentLevel] || []).filter(c =>
+      c.title.toLowerCase().includes(q) || c.subject.toLowerCase().includes(q)
+    );
+    list.innerHTML = '';
+    emptyState.style.display = courses.length === 0 ? 'block' : 'none';
+    courses.forEach(c => {
+      const item = document.createElement('div');
+      item.className = 'course-item';
+      item.innerHTML = `
+        <span class="bookicon">📄</span>
+        <span class="txt">
+          <span class="subject-tag">${c.subject}</span>
+          <h3>${c.title}</h3>
+        </span>
+        <span class="arrow">›</span>`;
+      item.addEventListener('click', () => openSheet(c));
+      list.appendChild(item);
+    });
+  }
+
+  function openSheet(c) {
+    document.getElementById('modalTitle').textContent = c.title;
+    document.getElementById('modalSubject').textContent = c.subject;
+    document.getElementById('modalCourseImg').src = c.courseFile;
+    document.getElementById('modalCourseLink').href = c.courseFile;
+    document.getElementById('modalExerciseImg').src = c.exerciseFile;
+    document.getElementById('modalExerciseLink').href = c.exerciseFile;
+    overlay.classList.add('open');
+  }
+
+  document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    courseScreen.style.display = 'none';
+    levelScreen.style.display = 'flex';
+    currentLevel = null;
+  });
+
+  document.querySelectorAll('.level-card').forEach(el => {
+    el.addEventListener('click', () => openLevel(el.dataset.level));
+  });
+
+  searchInput.addEventListener('input', renderCourses);
+
+  loadData();
+</script>
+
+</body>
+</html>

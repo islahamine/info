@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administration - Cours</title>
+<style>
+  :root { --bg:#f5f6f8; --card-bg:#fff; --text:#1a1a2e; --muted:#6b7280; --accent:#4f46e5; --accent-hover:#4338ca; --border:#e5e7eb; --danger:#dc2626; --ok:#059669; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { background:var(--accent); color:white; padding:28px 20px; text-align:center; }
+  header h1 { margin:0 0 4px; font-size:1.4rem; }
+  header p { margin:0; opacity:0.9; font-size:0.9rem; }
+  main { max-width:640px; margin:0 auto; padding:28px 20px 60px; }
+  .box { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:20px; }
+  .box h2 { margin:0 0 4px; font-size:1.05rem; }
+  .box .hint { color:var(--muted); font-size:0.85rem; margin:0 0 16px; }
+  label { display:block; font-size:0.85rem; font-weight:600; margin:14px 0 6px; }
+  label:first-of-type { margin-top:0; }
+  input[type=text], input[type=password], select {
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.95rem; background:white; color:var(--text);
+  }
+  input[type=file] { width:100%; padding:8px 0; }
+  .row { display:flex; gap:12px; }
+  .row > div { flex:1; }
+  button {
+    margin-top:18px; width:100%; padding:12px; border:none; border-radius:9px;
+    background:var(--accent); color:white; font-size:0.95rem; font-weight:600; cursor:pointer;
+  }
+  button:hover { background:var(--accent-hover); }
+  button:disabled { opacity:0.6; cursor:not-allowed; }
+  .status { margin-top:14px; font-size:0.88rem; padding:10px 12px; border-radius:8px; display:none; }
+  .status.ok { background:#d1fae5; color:#065f46; display:block; }
+  .status.err { background:#fee2e2; color:#991b1b; display:block; }
+  .status.loading { background:#e0e7ff; color:#3730a3; display:block; }
+  .saved-badge { font-size:0.78rem; color:var(--ok); margin-left:6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔧 Administration des cours</h1>
+  <p>Ajoutez un cours et ses exercices — publiés automatiquement sur le site</p>
+</header>
+
+<main>
+  <div class="box">
+    <h2>1. Connexion au dépôt GitHub</h2>
+    <p class="hint">À faire une seule fois. Ces informations restent uniquement dans votre navigateur.</p>
+    <label>Propriétaire du dépôt (owner) <span id="ownerSaved" class="saved-badge"></span></label>
+    <input type="text" id="owner" placeholder="ex: monprofil">
+    <label>Nom du dépôt (repo)</label>
+    <input type="text" id="repo" placeholder="ex: site-cours">
+    <label>Branche</label>
+    <input type="text" id="branch" placeholder="main" value="main">
+    <label>Token d'accès personnel (GitHub)</label>
+    <input type="password" id="token" placeholder="ghp_...">
+    <p class="hint">Créez-le sur GitHub → Settings → Developer settings → Personal access tokens → Fine-grained token, avec accès en lecture/écriture ("Contents") limité à ce seul dépôt.</p>
+    <button id="saveConfigBtn">Enregistrer la connexion</button>
+  </div>
+
+  <div class="box">
+    <h2>2. Ajouter un cours</h2>
+    <label>Niveau</label>
+    <select id="level">
+      <option value="1APIC">1APIC</option>
+      <option value="2APIC">2APIC</option>
+      <option value="3APIC">3APIC</option>
+    </select>
+    <div class="row">
+      <div>
+        <label>Matière</label>
+        <input type="text" id="subject" placeholder="ex: DevOps">
+      </div>
+      <div>
+        <label>Titre du cours</label>
+        <input type="text" id="title" placeholder="ex: Introduction à Docker">
+      </div>
+    </div>
+    <label>Image du cours (photo/scan)</label>
+    <input type="file" id="courseImage" accept="image/*">
+    <label>Image des exercices (photo/scan)</label>
+    <input type="file" id="exerciseImage" accept="image/*">
+    <button id="submitBtn">Publier ce cours</button>
+    <div class="status" id="status"></div>
+  </div>
+</main>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  // Load saved config
+  const cfg = JSON.parse(localStorage.getItem('ghConfig') || '{}');
+  if (cfg.owner) { $('owner').value = cfg.owner; $('ownerSaved').textContent = '✓ enregistré'; }
+  if (cfg.repo) $('repo').value = cfg.repo;
+  if (cfg.branch) $('branch').value = cfg.branch;
+  if (cfg.token) $('token').value = cfg.token;
+
+  $('saveConfigBtn').addEventListener('click', () => {
+    const conf = { owner: $('owner').value.trim(), repo: $('repo').value.trim(), branch: $('branch').value.trim() || 'main', token: $('token').value.trim() };
+    localStorage.setItem('ghConfig', JSON.stringify(conf));
+    $('ownerSaved').textContent = '✓ enregistré';
+    setStatus('ok', 'Connexion enregistrée dans ce navigateur.');
+  });
+
+  function setStatus(type, msg) {
+    const el = $('status');
+    el.className = 'status ' + type;
+    el.textContent = msg;
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result.split(',')[1]);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function ghRequest(conf, path, method, body) {
+    const res = await fetch(`https://api.github.com/repos/${conf.owner}/${conf.repo}/contents/${path}`, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${conf.token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `Erreur GitHub (${res.status})`);
+    }
+    return res.json();
+  }
+
+  async function getFileIfExists(conf, path) {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${conf.owner}/${conf.repo}/contents/${path}?ref=${conf.branch}`, {
+        headers: { 'Authorization': `Bearer ${conf.token}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error('Erreur de lecture de ' + path);
+      return res.json();
+    } catch (e) { return null; }
+  }
+
+  $('submitBtn').addEventListener('click', async () => {
+    const conf = JSON.parse(localStorage.getItem('ghConfig') || '{}');
+    if (!conf.owner || !conf.repo || !conf.token) {
+      setStatus('err', 'Veuillez d\'abord enregistrer la connexion GitHub (étape 1).');
+      return;
+    }
+    const level = $('level').value;
+    const subject = $('subject').value.trim();
+    const title = $('title').value.trim();
+    const courseFile = $('courseImage').files[0];
+    const exerciseFile = $('exerciseImage').files[0];
+
+    if (!subject || !title || !courseFile || !exerciseFile) {
+      setStatus('err', 'Veuillez remplir tous les champs et choisir les deux images.');
+      return;
+    }
+
+    $('submitBtn').disabled = true;
+    setStatus('loading', 'Publication en cours...');
+
+    try {
+      const id = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
+      const courseExt = courseFile.name.split('.').pop();
+      const exerciseExt = exerciseFile.name.split('.').pop();
+      const courseFilePath = `images/${level}/${id}-cours.${courseExt}`;
+      const exerciseFilePath = `images/${level}/${id}-exo.${exerciseExt}`;
+
+      // 1. Upload course image
+      const courseB64 = await fileToBase64(courseFile);
+      await ghRequest(conf, courseFilePath, 'PUT', {
+        message: `Ajout image cours: ${title}`,
+        content: courseB64,
+        branch: conf.branch
+      });
+
+      // 2. Upload exercise image
+      const exerciseB64 = await fileToBase64(exerciseFile);
+      await ghRequest(conf, exerciseFilePath, 'PUT', {
+        message: `Ajout image exercices: ${title}`,
+        content: exerciseB64,
+        branch: conf.branch
+      });
+
+      // 3. Update data.json
+      const dataFile = await getFileIfExists(conf, 'data.json');
+      let data = {};
+      if (dataFile) {
+        data = JSON.parse(decodeURIComponent(escape(atob(dataFile.content))));
+      }
+      if (!data[level]) data[level] = [];
+      data[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath });
+
+      const newContent = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+      await ghRequest(conf, 'data.json', 'PUT', {
+        message: `Ajout cours: ${title} (${level})`,
+        content: newContent,
+        branch: conf.branch,
+        sha: dataFile ? dataFile.sha : undefined
+      });
+
+      setStatus('ok', `"${title}" publié avec succès dans ${level} !`);
+      $('subject').value = ''; $('title').value = '';
+      $('courseImage').value = ''; $('exerciseImage').value = '';
+    } catch (e) {
+      setStatus('err', 'Erreur : ' + e.message);
+    } finally {
+      $('submitBtn').disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
