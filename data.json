@@ -3,13 +3,6 @@
   "2APIC": [],
   "3APIC": [
     {
-      "id": "cours-1-mu6fab9q",
-      "title": "cours 1",
-      "subject": "Pré AO",
-      "courseFile": "images/3APIC/cours-1-mu6fab9q-cours.jpeg",
-      "exerciseFile": "images/3APIC/cours-1-mu6fab9q-exo.jpeg"
-    },
-    {
       "id": "l-environnement-du-power-point-mu6g8osu",
       "title": "l'environnement du power point",
       "subject": "Unité 1 - Séquence 1 - Cours 1",
