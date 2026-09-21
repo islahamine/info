@@ -58,6 +58,10 @@
   .icon-btn.edit:hover { background:#e0e3f7; }
   .icon-btn.delete { background:#fee2e2; color:var(--danger); }
   .icon-btn.delete:hover { background:#fecaca; }
+  .missing-tag {
+    font-size:0.68rem; font-weight:700; color:#92400e; background:#fef3c7;
+    padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle;
+  }
   .empty-hint { color:var(--muted); font-size:0.88rem; text-align:center; padding:14px 0; }
   .editing-banner {
     display:none; background:#fef3c7; color:#92400e; font-size:0.85rem;
@@ -239,8 +243,8 @@
     $('courseImgLabel').textContent = 'Nouvelle image du cours (laisser vide pour garder l\'actuelle)';
     $('exerciseImgLabel').textContent = 'Nouvelle image des exercices (laisser vide pour garder l\'actuelle)';
     $('level').value = level;
-    $('subject').value = course.subject;
-    $('title').value = course.title;
+    $('subject').value = course.subject || '';
+    $('title').value = course.title || '';
     $('courseImage').value = '';
     $('exerciseImage').value = '';
     window.scrollTo({ top: $('formTitle').offsetTop - 20, behavior: 'smooth' });
@@ -260,15 +264,6 @@
     const courseFile = $('courseImage').files[0];
     const exerciseFile = $('exerciseImage').files[0];
 
-    if (!subject || !title) {
-      setStatus('status', 'err', 'Veuillez remplir la matière et le titre.');
-      return;
-    }
-    if (!editingContext && (!courseFile || !exerciseFile)) {
-      setStatus('status', 'err', 'Veuillez choisir les deux images pour un nouveau cours.');
-      return;
-    }
-
     $('submitBtn').disabled = true;
     setStatus('status', 'loading', 'Publication en cours...');
 
@@ -284,10 +279,16 @@
         entry.title = title;
 
         if (courseFile) {
-          await uploadImage(conf, entry.courseFile, courseFile, `Mise à jour image cours: ${title}`);
+          const ext = courseFile.name.split('.').pop();
+          const path = entry.courseFile || `images/${editingContext.level}/${entry.id}-cours.${ext}`;
+          await uploadImage(conf, path, courseFile, `Mise à jour image cours: ${title || entry.id}`);
+          entry.courseFile = path;
         }
         if (exerciseFile) {
-          await uploadImage(conf, entry.exerciseFile, exerciseFile, `Mise à jour image exercices: ${title}`);
+          const ext = exerciseFile.name.split('.').pop();
+          const path = entry.exerciseFile || `images/${editingContext.level}/${entry.id}-exo.${ext}`;
+          await uploadImage(conf, path, exerciseFile, `Mise à jour image exercices: ${title || entry.id}`);
+          entry.exerciseFile = path;
         }
 
         // Level changed: move entry to the new level's array
@@ -300,14 +301,20 @@
         await saveDataFile(conf, `Modification cours: ${title}`);
         setStatus('status', 'ok', `"${title}" mis à jour avec succès !`);
       } else {
-        const id = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
-        const courseExt = courseFile.name.split('.').pop();
-        const exerciseExt = exerciseFile.name.split('.').pop();
-        const courseFilePath = `images/${level}/${id}-cours.${courseExt}`;
-        const exerciseFilePath = `images/${level}/${id}-exo.${exerciseExt}`;
+        const slug = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const id = (slug || 'cours') + '-' + Date.now().toString(36);
+        let courseFilePath = null, exerciseFilePath = null;
 
-        await uploadImage(conf, courseFilePath, courseFile, `Ajout image cours: ${title}`);
-        await uploadImage(conf, exerciseFilePath, exerciseFile, `Ajout image exercices: ${title}`);
+        if (courseFile) {
+          const courseExt = courseFile.name.split('.').pop();
+          courseFilePath = `images/${level}/${id}-cours.${courseExt}`;
+          await uploadImage(conf, courseFilePath, courseFile, `Ajout image cours: ${title || id}`);
+        }
+        if (exerciseFile) {
+          const exerciseExt = exerciseFile.name.split('.').pop();
+          exerciseFilePath = `images/${level}/${id}-exo.${exerciseExt}`;
+          await uploadImage(conf, exerciseFilePath, exerciseFile, `Ajout image exercices: ${title || id}`);
+        }
 
         if (!currentData[level]) currentData[level] = [];
         currentData[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath, date: new Date().toISOString() });
@@ -341,13 +348,14 @@
       ['1APIC', '2APIC', '3APIC'].forEach(level => {
         (currentData[level] || []).forEach(course => {
           total++;
+          const incomplete = !course.title || !course.subject || !course.courseFile || !course.exerciseFile;
           const row = document.createElement('div');
           row.className = 'course-row';
           row.innerHTML = `
             <span class="level-tag">${level}</span>
             <span class="info">
-              <span class="subject">${course.subject}</span>
-              <div class="title">${course.title}</div>
+              <span class="subject">${course.subject || 'Matière non spécifiée'}</span>
+              <div class="title">${course.title || 'Sans titre'}${incomplete ? '<span class="missing-tag">⚠ Incomplet</span>' : ''}</div>
             </span>
             <span class="actions">
               <button class="icon-btn edit">✏️</button>
