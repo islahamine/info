@@ -1,23 +1,9 @@
 {
   "1APIC": [
-    {
-      "id": "cours-mualsqn0",
-      "title": "",
-      "subject": "test course",
-      "courseFile": "images/1APIC/cours-mualsqn0-cours.jpg",
-      "exerciseFile": null,
-      "date": "2026-09-21T02:05:56.713Z"
-    }
+
   ],
   "2APIC": [],
   "3APIC": [
-    {
-      "id": "correction-mualelrb",
-      "title": "correction",
-      "subject": "correction de l'évaluation diagnostique",
-      "courseFile": "images/3APIC/correction-mualelrb-cours.jpg",
-      "exerciseFile": "images/3APIC/correction-mualelrb-exo.jpg",
-      "date": "2026-09-21T01:54:59.193Z"
-    }
+
   ]
 }
