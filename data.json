@@ -1,14 +1,6 @@
 {
   "1APIC": [
     {
-      "id": "correction-muald4vs",
-      "title": "correction",
-      "subject": "Correction de l'évaluation diagnostique",
-      "courseFile": "images/1APIC/correction-muald4vs-cours.jpg",
-      "exerciseFile": "images/1APIC/correction-muald4vs-exo.jpg",
-      "date": "2026-09-21T01:53:50.969Z"
-    },
-    {
       "id": "cours-mualsqn0",
       "title": "",
       "subject": "test course",
