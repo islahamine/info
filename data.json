@@ -7,6 +7,14 @@
       "courseFile": "images/1APIC/correction-muald4vs-cours.jpg",
       "exerciseFile": "images/1APIC/correction-muald4vs-exo.jpg",
       "date": "2026-09-21T01:53:50.969Z"
+    },
+    {
+      "id": "cours-mualsqn0",
+      "title": "",
+      "subject": "test course",
+      "courseFile": "images/1APIC/cours-mualsqn0-cours.jpg",
+      "exerciseFile": null,
+      "date": "2026-09-21T02:05:56.713Z"
     }
   ],
   "2APIC": [],
