@@ -2,13 +2,6 @@
   "1APIC": [],
   "2APIC": [],
   "3APIC": [
-    {
-      "id": "correction-muam1re0",
-      "title": "correction",
-      "subject": "Correction de l'évaluation diagnostique",
-      "courseFile": "images/3APIC/correction-muam1re0-cours.png",
-      "exerciseFile": null,
-      "date": "2026-09-21T02:12:57.847Z"
-    }
+
   ]
 }
