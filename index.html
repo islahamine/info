@@ -88,11 +88,6 @@
     letter-spacing: 0.03em; vertical-align: middle;
   }
   .date-text { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
-  .missing-badge {
-    display: inline-block; background: #f59e0b; color: white; font-size: 0.62rem;
-    font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-left: 7px;
-    letter-spacing: 0.02em; vertical-align: middle;
-  }
 
   .empty-state, .error-state { text-align: center; color: var(--muted); padding: 50px 20px; }
 
@@ -316,14 +311,13 @@
     const viewed = getViewedSet();
     courses.forEach(c => {
       const isNew = !viewed.has(c.id);
-      const isIncomplete = !c.title || !c.subject || !c.courseFile || !c.exerciseFile;
       const item = document.createElement('div');
       item.className = 'course-item';
       item.innerHTML = `
         <span class="subj-icon">${iconFor(c.subject)}</span>
         <span class="txt">
           <span class="subject-tag">${c.subject || 'Matière non spécifiée'}</span>
-          <h3>${c.title || 'Sans titre'}${isNew ? '<span class="new-badge">NOUVEAU</span>' : ''}${isIncomplete ? '<span class="missing-badge">Incomplet</span>' : ''}</h3>
+          <h3>${c.title || 'Sans titre'}${isNew ? '<span class="new-badge">NOUVEAU</span>' : ''}</h3>
           ${c.date ? `<div class="date-text">${formatDate(c.date)}</div>` : ''}
         </span>
         <span class="arrow">›</span>`;
