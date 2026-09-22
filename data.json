@@ -10,5 +10,14 @@
     }
   ],
   "2APIC": [],
-  "3APIC": []
+  "3APIC": [
+    {
+      "id": "correction-mucfxppo",
+      "title": "Correction",
+      "subject": "Correction de l'évaluation diagnostique",
+      "courseFile": null,
+      "exerciseFile": "images/3APIC/correction-mucfxppo-exo.png",
+      "date": "2026-09-22T08:57:24.186Z"
+    }
+  ]
 }
