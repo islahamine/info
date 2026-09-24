@@ -1,48 +1,11 @@
 {
   "1APIC": [
-    {
-      "id": "cours-mufv20f3",
-      "title": "",
-      "subject": "",
-      "courseFile": null,
-      "exerciseFile": null,
-      "coursePrintFile": null,
-      "exercisePrintFile": null,
-      "date": "2026-09-24T18:23:54.783Z"
-    }
+
   ],
   "2APIC": [
-    {
-      "id": "cours-mufueni1",
-      "title": "",
-      "subject": "Unité 1 - Test",
-      "courseFile": "images/2APIC/cours-mufueni1-cours.png",
-      "exerciseFile": null,
-      "coursePrintFile": null,
-      "exercisePrintFile": null,
-      "date": "2026-09-24T18:05:47.013Z"
-    },
-    {
-      "id": "test-mufuxdfn",
-      "title": "Test",
-      "subject": "Test",
-      "courseFile": "images/2APIC/test-mufuxdfn-cours.png",
-      "exerciseFile": null,
-      "coursePrintFile": null,
-      "exercisePrintFile": null,
-      "date": "2026-09-24T18:20:23.531Z"
-    }
+
   ],
   "3APIC": [
-    {
-      "id": "correction-mufd8avz",
-      "title": "Correction",
-      "subject": "Correction de l'évaluation diagnostique",
-      "courseFile": null,
-      "exerciseFile": "images/3APIC/correction-mufd8avz-exo.png",
-      "coursePrintFile": null,
-      "exercisePrintFile": "images/3APIC/correction-mufd8avz-exo-photocopie.png",
-      "date": "2026-09-24T10:05:00.510Z"
-    }
+    
   ]
 }
