@@ -234,9 +234,11 @@
   let currentLevel = null;
   let loadFailed = false;
 
-  // Contenu servi directement depuis GitHub (raw) pour éviter le délai de
-  // build/déploiement de Cloudflare Pages après une modification via admin.html
-  const GH_RAW_BASE = 'https://raw.githubusercontent.com/islahamine/info/main/';
+  // On sert data.json/images depuis le domaine Cloudflare Pages lui-même
+  // (raw.githubusercontent.com a un cache CDN peu fiable, parfois plusieurs
+  // heures de retard). Cloudflare Pages invalide son cache à chaque déploiement,
+  // ce qui est plus rapide et prévisible.
+  const GH_RAW_BASE = '';
   function ghUrl(path) { return path ? (GH_RAW_BASE + path) : ''; }
 
   const levelScreen = document.getElementById('levelScreen');
