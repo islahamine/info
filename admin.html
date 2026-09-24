@@ -287,6 +287,9 @@
 
         entry.subject = subject;
         entry.title = title;
+        // Keep the original publication date, but record the last update so
+        // the student site can immediately bypass any cached image version.
+        entry.updatedAt = new Date().toISOString();
 
         if (courseFile) {
           const ext = courseFile.name.split('.').pop();

@@ -247,6 +247,19 @@
   };
   function iconFor(subject) { return SUBJECT_ICONS[subject] || "📄"; }
 
+  // Course data and images are read directly from the GitHub repository.
+  // This avoids waiting for a new Cloudflare Pages deployment whenever the
+  // admin publishes a course or replaces an image.
+  const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/islahamine/info/main/';
+
+  function assetUrl(filePath, version) {
+    if (!filePath) return '';
+    if (/^https?:\/\//i.test(filePath)) return filePath;
+    const cleanPath = String(filePath).replace(/^\/+/, '');
+    const url = GITHUB_RAW_BASE + cleanPath.split('/').map(encodeURIComponent).join('/');
+    return version ? `${url}?v=${encodeURIComponent(version)}` : url;
+  }
+
   const fallbackData = {
     "1APIC": [{ id: "algo1", title: "Introduction aux algorithmes", subject: "Algorithmique", courseFile: "images/1APIC/algo1-cours.jpg", exerciseFile: "images/1APIC/algo1-exo.jpg", date: "2026-01-15" }],
     "2APIC": [{ id: "docker1", title: "Introduction à Docker", subject: "DevOps", courseFile: "images/2APIC/docker1-cours.jpg", exerciseFile: "images/2APIC/docker1-exo.jpg", date: "2026-01-15" }],
@@ -325,7 +338,7 @@
 
   async function loadData() {
     try {
-      const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch(GITHUB_RAW_BASE + 'data.json?t=' + Date.now(), { cache: 'no-store' });
       allData = await res.json();
     } catch (e) {
       allData = fallbackData;
@@ -376,33 +389,30 @@
     const img = document.getElementById('modal' + prefix + 'Img');
     const link = document.getElementById('modal' + prefix + 'Link');
     const row = link.closest('.download-row');
-    const hasFile = typeof filePath === 'string' && filePath.trim() !== '';
-
-    if (hasFile) {
-      img.src = filePath;
+    if (filePath) {
+      img.src = assetUrl(filePath, window.currentModalCourseVersion);
       img.style.visibility = 'visible';
-      link.href = filePath;
+      link.href = assetUrl(filePath, window.currentModalCourseVersion);
       link.classList.remove('disabled');
       link.textContent = '⬇';
       link.removeAttribute('aria-disabled');
       row.classList.remove('missing');
-      row.style.display = 'flex';
     } else {
       img.removeAttribute('src');
       img.style.visibility = 'hidden';
       link.removeAttribute('href');
-      link.classList.remove('disabled');
-      link.removeAttribute('aria-disabled');
-      row.classList.remove('missing');
-      row.style.display = 'none';
+      link.classList.add('disabled');
+      link.textContent = '✕';
+      link.setAttribute('aria-disabled', 'true');
+      row.classList.add('missing');
     }
   }
 
   function setOptionalRow(rowId, imgId, linkId, filePath) {
     const row = document.getElementById(rowId);
     if (filePath) {
-      document.getElementById(imgId).src = filePath;
-      document.getElementById(linkId).href = filePath;
+      document.getElementById(imgId).src = assetUrl(filePath, window.currentModalCourseVersion);
+      document.getElementById(linkId).href = assetUrl(filePath, window.currentModalCourseVersion);
       row.style.display = 'flex';
     } else {
       row.style.display = 'none';
@@ -410,6 +420,7 @@
   }
 
   function openSheet(c) {
+    window.currentModalCourseVersion = c.updatedAt || c.date || '';
     document.getElementById('modalTitle').textContent = c.title || 'Sans titre';
     document.getElementById('modalSubject').textContent = c.subject || 'Matière non spécifiée';
     document.getElementById('modalDate').textContent = c.date ? ('Ajouté le ' + formatDate(c.date)) : '';
