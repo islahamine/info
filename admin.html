@@ -114,8 +114,12 @@
     </div>
     <label id="courseImgLabel">Image du cours (photo/scan)</label>
     <input type="file" id="courseImage" accept="image/*">
+    <label>Photocopie à coller — cours (optionnel)</label>
+    <input type="file" id="coursePrintImage" accept="image/*">
     <label id="exerciseImgLabel">Image des exercices (photo/scan)</label>
     <input type="file" id="exerciseImage" accept="image/*">
+    <label>Photocopie à coller — exercices (optionnel)</label>
+    <input type="file" id="exercisePrintImage" accept="image/*">
     <button id="submitBtn">Publier ce cours</button>
     <button class="secondary" id="cancelEditBtn" style="display:none;">Annuler la modification</button>
     <div class="status" id="status"></div>
@@ -231,11 +235,13 @@
     $('subject').value = '';
     $('title').value = '';
     $('courseImage').value = '';
+    $('coursePrintImage').value = '';
     $('exerciseImage').value = '';
+    $('exercisePrintImage').value = '';
   }
 
   function startEdit(level, course) {
-    editingContext = { level, id: course.id, courseFile: course.courseFile, exerciseFile: course.exerciseFile };
+    editingContext = { level, id: course.id, courseFile: course.courseFile, exerciseFile: course.exerciseFile, coursePrintFile: course.coursePrintFile, exercisePrintFile: course.exercisePrintFile };
     $('formTitle').textContent = '2. Modifier un cours';
     $('editingBanner').classList.add('show');
     $('submitBtn').textContent = 'Enregistrer les modifications';
@@ -246,7 +252,9 @@
     $('subject').value = course.subject || '';
     $('title').value = course.title || '';
     $('courseImage').value = '';
+    $('coursePrintImage').value = '';
     $('exerciseImage').value = '';
+    $('exercisePrintImage').value = '';
     window.scrollTo({ top: $('formTitle').offsetTop - 20, behavior: 'smooth' });
   }
 
@@ -262,7 +270,9 @@
     const subject = $('subject').value.trim();
     const title = $('title').value.trim();
     const courseFile = $('courseImage').files[0];
+    const coursePrintFile = $('coursePrintImage').files[0];
     const exerciseFile = $('exerciseImage').files[0];
+    const exercisePrintFile = $('exercisePrintImage').files[0];
 
     $('submitBtn').disabled = true;
     setStatus('status', 'loading', 'Publication en cours...');
@@ -290,6 +300,18 @@
           await uploadImage(conf, path, exerciseFile, `Mise à jour image exercices: ${title || entry.id}`);
           entry.exerciseFile = path;
         }
+        if (coursePrintFile) {
+          const ext = coursePrintFile.name.split('.').pop();
+          const path = entry.coursePrintFile || `images/${editingContext.level}/${entry.id}-cours-photocopie.${ext}`;
+          await uploadImage(conf, path, coursePrintFile, `Mise à jour photocopie cours: ${title || entry.id}`);
+          entry.coursePrintFile = path;
+        }
+        if (exercisePrintFile) {
+          const ext = exercisePrintFile.name.split('.').pop();
+          const path = entry.exercisePrintFile || `images/${editingContext.level}/${entry.id}-exo-photocopie.${ext}`;
+          await uploadImage(conf, path, exercisePrintFile, `Mise à jour photocopie exercices: ${title || entry.id}`);
+          entry.exercisePrintFile = path;
+        }
 
         // Level changed: move entry to the new level's array
         if (level !== editingContext.level) {
@@ -303,21 +325,31 @@
       } else {
         const slug = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         const id = (slug || 'cours') + '-' + Date.now().toString(36);
-        let courseFilePath = null, exerciseFilePath = null;
+        let courseFilePath = null, exerciseFilePath = null, coursePrintFilePath = null, exercisePrintFilePath = null;
 
         if (courseFile) {
           const courseExt = courseFile.name.split('.').pop();
           courseFilePath = `images/${level}/${id}-cours.${courseExt}`;
           await uploadImage(conf, courseFilePath, courseFile, `Ajout image cours: ${title || id}`);
         }
+        if (coursePrintFile) {
+          const ext = coursePrintFile.name.split('.').pop();
+          coursePrintFilePath = `images/${level}/${id}-cours-photocopie.${ext}`;
+          await uploadImage(conf, coursePrintFilePath, coursePrintFile, `Ajout photocopie cours: ${title || id}`);
+        }
         if (exerciseFile) {
           const exerciseExt = exerciseFile.name.split('.').pop();
           exerciseFilePath = `images/${level}/${id}-exo.${exerciseExt}`;
           await uploadImage(conf, exerciseFilePath, exerciseFile, `Ajout image exercices: ${title || id}`);
         }
+        if (exercisePrintFile) {
+          const ext = exercisePrintFile.name.split('.').pop();
+          exercisePrintFilePath = `images/${level}/${id}-exo-photocopie.${ext}`;
+          await uploadImage(conf, exercisePrintFilePath, exercisePrintFile, `Ajout photocopie exercices: ${title || id}`);
+        }
 
         if (!currentData[level]) currentData[level] = [];
-        currentData[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath, date: new Date().toISOString() });
+        currentData[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath, coursePrintFile: coursePrintFilePath, exercisePrintFile: exercisePrintFilePath, date: new Date().toISOString() });
 
         await saveDataFile(conf, `Ajout cours: ${title} (${level})`);
         setStatus('status', 'ok', `"${title}" publié avec succès dans ${level} !`);
@@ -384,10 +416,22 @@
       await saveDataFile(conf, `Suppression cours: ${course.title}`);
 
       // Best-effort: remove the image files too
-      const courseImg = await getFileIfExists(conf, course.courseFile);
-      if (courseImg) await ghDelete(conf, course.courseFile, { message: `Suppression image cours: ${course.title}`, sha: courseImg.sha, branch: conf.branch });
-      const exerciseImg = await getFileIfExists(conf, course.exerciseFile);
-      if (exerciseImg) await ghDelete(conf, course.exerciseFile, { message: `Suppression image exercices: ${course.title}`, sha: exerciseImg.sha, branch: conf.branch });
+      if (course.courseFile) {
+        const courseImg = await getFileIfExists(conf, course.courseFile);
+        if (courseImg) await ghDelete(conf, course.courseFile, { message: `Suppression image cours: ${course.title}`, sha: courseImg.sha, branch: conf.branch });
+      }
+      if (course.exerciseFile) {
+        const exerciseImg = await getFileIfExists(conf, course.exerciseFile);
+        if (exerciseImg) await ghDelete(conf, course.exerciseFile, { message: `Suppression image exercices: ${course.title}`, sha: exerciseImg.sha, branch: conf.branch });
+      }
+      if (course.coursePrintFile) {
+        const f = await getFileIfExists(conf, course.coursePrintFile);
+        if (f) await ghDelete(conf, course.coursePrintFile, { message: `Suppression photocopie cours: ${course.title}`, sha: f.sha, branch: conf.branch });
+      }
+      if (course.exercisePrintFile) {
+        const f = await getFileIfExists(conf, course.exercisePrintFile);
+        if (f) await ghDelete(conf, course.exercisePrintFile, { message: `Suppression photocopie exercices: ${course.title}`, sha: f.sha, branch: conf.branch });
+      }
 
       if (editingContext && editingContext.id === course.id) resetForm();
       setStatus('listStatus', 'ok', `"${course.title}" supprimé.`);

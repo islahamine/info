@@ -133,6 +133,8 @@
   .download-row.exercise a.btn { background: var(--accent2); }
   .download-row.missing { opacity: 0.5; }
   .download-row a.btn.disabled { background: var(--muted) !important; pointer-events: none; }
+  .download-row.print { border-style: dashed; margin-top: -4px; }
+  .download-row.print a.btn { background: #475569; }
 
   .sheet-close {
     display: block; width: 100%; text-align: center; padding: 12px;
@@ -207,10 +209,20 @@
       <span class="label">📘 Cours</span>
       <a class="btn" id="modalCourseLink" download>⬇</a>
     </div>
+    <div class="download-row print" id="rowCoursePrint" style="display:none;">
+      <img id="modalCoursePrintImg" alt="Photocopie cours" loading="lazy" decoding="async">
+      <span class="label">📎 Photocopie à coller</span>
+      <a class="btn" id="modalCoursePrintLink" download>⬇</a>
+    </div>
     <div class="download-row exercise">
       <img id="modalExerciseImg" alt="Exercices" loading="lazy" decoding="async">
       <span class="label">✏️ Exercices</span>
       <a class="btn" id="modalExerciseLink" download>⬇</a>
+    </div>
+    <div class="download-row print" id="rowExercisePrint" style="display:none;">
+      <img id="modalExercisePrintImg" alt="Photocopie exercices" loading="lazy" decoding="async">
+      <span class="label">📎 Photocopie à coller</span>
+      <a class="btn" id="modalExercisePrintLink" download>⬇</a>
     </div>
 
     <button class="sheet-close" id="modalClose">Fermer</button>
@@ -265,6 +277,39 @@
       const el = document.getElementById('count-' + lvl);
       if (el) el.textContent = ' • ' + (allData[lvl] || []).length + ' cours';
     });
+  }
+
+  function drawFavicon(count) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 64, 64);
+    ctx.font = '52px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('📚', 30, 36);
+    if (count > 0) {
+      ctx.beginPath();
+      ctx.arc(50, 16, 15, 0, Math.PI * 2);
+      ctx.fillStyle = '#dc2626';
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText(count > 9 ? '9+' : String(count), 50, 17);
+    }
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+    link.href = canvas.toDataURL('image/png');
+  }
+
+  function updateBadge() {
+    const viewed = getViewedSet();
+    let newCount = 0;
+    ['1APIC', '2APIC', '3APIC'].forEach(lvl => {
+      (allData[lvl] || []).forEach(c => { if (!viewed.has(c.id)) newCount++; });
+    });
+    document.title = newCount > 0 ? `(${newCount}) Cours` : 'Cours';
+    drawFavicon(newCount);
   }
 
   function showSkeleton() {
@@ -350,15 +395,29 @@
     }
   }
 
+  function setOptionalRow(rowId, imgId, linkId, filePath) {
+    const row = document.getElementById(rowId);
+    if (filePath) {
+      document.getElementById(imgId).src = filePath;
+      document.getElementById(linkId).href = filePath;
+      row.style.display = 'flex';
+    } else {
+      row.style.display = 'none';
+    }
+  }
+
   function openSheet(c) {
     document.getElementById('modalTitle').textContent = c.title || 'Sans titre';
     document.getElementById('modalSubject').textContent = c.subject || 'Matière non spécifiée';
     document.getElementById('modalDate').textContent = c.date ? ('Ajouté le ' + formatDate(c.date)) : '';
     setDownloadRow('Course', c.courseFile);
     setDownloadRow('Exercise', c.exerciseFile);
+    setOptionalRow('rowCoursePrint', 'modalCoursePrintImg', 'modalCoursePrintLink', c.coursePrintFile);
+    setOptionalRow('rowExercisePrint', 'modalExercisePrintImg', 'modalExercisePrintLink', c.exercisePrintFile);
     overlay.classList.add('open');
     markViewed(c.id);
     renderCourses();
+    updateBadge();
   }
 
   document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
@@ -377,7 +436,7 @@
   searchInput.addEventListener('input', renderCourses);
 
   showSkeleton();
-  loadData().then(updateLevelCounts);
+  loadData().then(() => { updateLevelCounts(); updateBadge(); });
 </script>
 
 </body>
