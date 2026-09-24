@@ -234,6 +234,11 @@
   let currentLevel = null;
   let loadFailed = false;
 
+  // Contenu servi directement depuis GitHub (raw) pour éviter le délai de
+  // build/déploiement de Cloudflare Pages après une modification via admin.html
+  const GH_RAW_BASE = 'https://raw.githubusercontent.com/islahamine/info/main/';
+  function ghUrl(path) { return path ? (GH_RAW_BASE + path) : ''; }
+
   const levelScreen = document.getElementById('levelScreen');
   const courseScreen = document.getElementById('courseScreen');
   const list = document.getElementById('courseList');
@@ -325,7 +330,7 @@
 
   async function loadData() {
     try {
-      const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch(GH_RAW_BASE + 'data.json?t=' + Date.now(), { cache: 'no-store' });
       allData = await res.json();
     } catch (e) {
       allData = fallbackData;
@@ -379,9 +384,11 @@
     const hasFile = typeof filePath === 'string' && filePath.trim() !== '';
 
     if (hasFile) {
-      img.src = filePath;
+      img.src = ghUrl(filePath);
       img.style.visibility = 'visible';
-      link.href = filePath;
+      link.href = ghUrl(filePath);
+      link.dataset.url = ghUrl(filePath);
+      link.dataset.filename = filePath.split('/').pop();
       link.classList.remove('disabled');
       link.textContent = '⬇';
       link.removeAttribute('aria-disabled');
@@ -391,6 +398,8 @@
       img.removeAttribute('src');
       img.style.visibility = 'hidden';
       link.removeAttribute('href');
+      delete link.dataset.url;
+      delete link.dataset.filename;
       link.classList.remove('disabled');
       link.removeAttribute('aria-disabled');
       row.classList.remove('missing');
@@ -400,14 +409,48 @@
 
   function setOptionalRow(rowId, imgId, linkId, filePath) {
     const row = document.getElementById(rowId);
+    const link = document.getElementById(linkId);
     if (filePath) {
-      document.getElementById(imgId).src = filePath;
-      document.getElementById(linkId).href = filePath;
+      document.getElementById(imgId).src = ghUrl(filePath);
+      link.href = ghUrl(filePath);
+      link.dataset.url = ghUrl(filePath);
+      link.dataset.filename = filePath.split('/').pop();
       row.style.display = 'flex';
     } else {
+      delete link.dataset.url;
+      delete link.dataset.filename;
       row.style.display = 'none';
     }
   }
+
+  // Téléchargement forcé (via blob) : l'attribut download seul ne fonctionne
+  // pas de manière fiable pour des fichiers cross-origin (raw.githubusercontent.com).
+  // Repli : ouverture directe si le téléchargement échoue (ex: hors-ligne).
+  async function forceDownload(url, filename) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || 'fichier';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 15000);
+    } catch (e) {
+      window.open(url, '_blank');
+    }
+  }
+
+  ['modalCourseLink', 'modalCoursePrintLink', 'modalExerciseLink', 'modalExercisePrintLink'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function (e) {
+      if (!this.dataset.url) return;
+      e.preventDefault();
+      forceDownload(this.dataset.url, this.dataset.filename);
+    });
+  });
 
   function openSheet(c) {
     document.getElementById('modalTitle').textContent = c.title || 'Sans titre';
