@@ -1,23 +1,9 @@
 {
   "1APIC": [
-    {
-      "id": "notion-d-information-mucfjvoa",
-      "title": "Notion d'information",
-      "subject": "Unité 1 - Séquence 1 - Cours 1",
-      "courseFile": "images/1APIC/notion-d-information-mucfjvoa-cours.PNG",
-      "exerciseFile": "images/1APIC/notion-d-information-mucfjvoa-exo.png",
-      "date": "2026-09-22T08:46:40.009Z"
-    }
+
   ],
   "2APIC": [],
   "3APIC": [
-    {
-      "id": "correction-mucfxppo",
-      "title": "Correction",
-      "subject": "Correction de l'évaluation diagnostique",
-      "courseFile": null,
-      "exerciseFile": "images/3APIC/correction-mucfxppo-exo.png",
-      "date": "2026-09-22T08:57:24.186Z"
-    }
+
   ]
 }
