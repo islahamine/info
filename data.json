@@ -21,6 +21,16 @@
       "coursePrintFile": null,
       "exercisePrintFile": null,
       "date": "2026-09-24T18:05:47.013Z"
+    },
+    {
+      "id": "test-mufuxdfn",
+      "title": "Test",
+      "subject": "Test",
+      "courseFile": "images/2APIC/test-mufuxdfn-cours.png",
+      "exerciseFile": null,
+      "coursePrintFile": null,
+      "exercisePrintFile": null,
+      "date": "2026-09-24T18:20:23.531Z"
     }
   ],
   "3APIC": [
