@@ -209,13 +209,21 @@
       <span class="label">📘 Cours</span>
       <a class="btn" id="modalCourseLink" download>⬇</a>
     </div>
-    <div id="coursePrintContainer"></div>
+    <div class="download-row print" id="rowCoursePrint" style="display:none;">
+      <img id="modalCoursePrintImg" alt="Photocopie cours" loading="lazy" decoding="async">
+      <span class="label">📎 Photocopie à coller</span>
+      <a class="btn" id="modalCoursePrintLink" download>⬇</a>
+    </div>
     <div class="download-row exercise">
       <img id="modalExerciseImg" alt="Exercices" loading="lazy" decoding="async">
       <span class="label">✏️ Exercices</span>
       <a class="btn" id="modalExerciseLink" download>⬇</a>
     </div>
-    <div id="exercisePrintContainer"></div>
+    <div class="download-row print" id="rowExercisePrint" style="display:none;">
+      <img id="modalExercisePrintImg" alt="Photocopie exercices" loading="lazy" decoding="async">
+      <span class="label">📎 Photocopie à coller</span>
+      <a class="btn" id="modalExercisePrintLink" download>⬇</a>
+    </div>
 
     <button class="sheet-close" id="modalClose">Fermer</button>
   </div>
@@ -368,7 +376,9 @@
     const img = document.getElementById('modal' + prefix + 'Img');
     const link = document.getElementById('modal' + prefix + 'Link');
     const row = link.closest('.download-row');
-    if (filePath) {
+    const hasFile = typeof filePath === 'string' && filePath.trim() !== '';
+
+    if (hasFile) {
       img.src = filePath;
       img.style.visibility = 'visible';
       link.href = filePath;
@@ -376,35 +386,27 @@
       link.textContent = '⬇';
       link.removeAttribute('aria-disabled');
       row.classList.remove('missing');
+      row.style.display = 'flex';
     } else {
       img.removeAttribute('src');
       img.style.visibility = 'hidden';
       link.removeAttribute('href');
-      link.classList.add('disabled');
-      link.textContent = '✕';
-      link.setAttribute('aria-disabled', 'true');
-      row.classList.add('missing');
+      link.classList.remove('disabled');
+      link.removeAttribute('aria-disabled');
+      row.classList.remove('missing');
+      row.style.display = 'none';
     }
   }
 
-  function toFileArray(entry, pluralKey, singularKey) {
-    if (Array.isArray(entry[pluralKey]) && entry[pluralKey].length) return entry[pluralKey];
-    if (entry[singularKey]) return [entry[singularKey]];
-    return [];
-  }
-
-  function renderPrintRows(containerId, files) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-    files.forEach((path, i) => {
-      const row = document.createElement('div');
-      row.className = 'download-row print';
-      row.innerHTML = `
-        <img src="${path}" alt="Photocopie ${i + 1}" loading="lazy" decoding="async">
-        <span class="label">📎 Photocopie${files.length > 1 ? ' ' + (i + 1) : ''}</span>
-        <a class="btn" href="${path}" download>⬇</a>`;
-      container.appendChild(row);
-    });
+  function setOptionalRow(rowId, imgId, linkId, filePath) {
+    const row = document.getElementById(rowId);
+    if (filePath) {
+      document.getElementById(imgId).src = filePath;
+      document.getElementById(linkId).href = filePath;
+      row.style.display = 'flex';
+    } else {
+      row.style.display = 'none';
+    }
   }
 
   function openSheet(c) {
@@ -413,8 +415,8 @@
     document.getElementById('modalDate').textContent = c.date ? ('Ajouté le ' + formatDate(c.date)) : '';
     setDownloadRow('Course', c.courseFile);
     setDownloadRow('Exercise', c.exerciseFile);
-    renderPrintRows('coursePrintContainer', toFileArray(c, 'coursePrintFiles', 'coursePrintFile'));
-    renderPrintRows('exercisePrintContainer', toFileArray(c, 'exercisePrintFiles', 'exercisePrintFile'));
+    setOptionalRow('rowCoursePrint', 'modalCoursePrintImg', 'modalCoursePrintLink', c.coursePrintFile);
+    setOptionalRow('rowExercisePrint', 'modalExercisePrintImg', 'modalExercisePrintLink', c.exercisePrintFile);
     overlay.classList.add('open');
     markViewed(c.id);
     renderCourses();
