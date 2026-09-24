@@ -1,15 +1,6 @@
 {
   "1APIC": [
-    {
-      "id": "sans-mufvcd9u",
-      "title": "sans",
-      "subject": "Cours de test",
-      "courseFile": "images/1APIC/sans-mufvcd9u-cours.png",
-      "exerciseFile": null,
-      "coursePrintFile": null,
-      "exercisePrintFile": null,
-      "date": "2026-09-24T18:32:00.072Z"
-    }
+
   ],
   "2APIC": [],
   "3APIC": []
