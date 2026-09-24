@@ -376,7 +376,9 @@
     const img = document.getElementById('modal' + prefix + 'Img');
     const link = document.getElementById('modal' + prefix + 'Link');
     const row = link.closest('.download-row');
-    if (filePath) {
+    const hasFile = typeof filePath === 'string' && filePath.trim() !== '';
+
+    if (hasFile) {
       img.src = filePath;
       img.style.visibility = 'visible';
       link.href = filePath;
@@ -384,14 +386,15 @@
       link.textContent = '⬇';
       link.removeAttribute('aria-disabled');
       row.classList.remove('missing');
+      row.style.display = 'flex';
     } else {
       img.removeAttribute('src');
       img.style.visibility = 'hidden';
       link.removeAttribute('href');
-      link.classList.add('disabled');
-      link.textContent = '✕';
-      link.setAttribute('aria-disabled', 'true');
-      row.classList.add('missing');
+      link.classList.remove('disabled');
+      link.removeAttribute('aria-disabled');
+      row.classList.remove('missing');
+      row.style.display = 'none';
     }
   }
 
