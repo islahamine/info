@@ -209,21 +209,13 @@
       <span class="label">📘 Cours</span>
       <a class="btn" id="modalCourseLink" download>⬇</a>
     </div>
-    <div class="download-row print" id="rowCoursePrint" style="display:none;">
-      <img id="modalCoursePrintImg" alt="Photocopie cours" loading="lazy" decoding="async">
-      <span class="label">📎 Photocopie à coller</span>
-      <a class="btn" id="modalCoursePrintLink" download>⬇</a>
-    </div>
+    <div id="coursePrintContainer"></div>
     <div class="download-row exercise">
       <img id="modalExerciseImg" alt="Exercices" loading="lazy" decoding="async">
       <span class="label">✏️ Exercices</span>
       <a class="btn" id="modalExerciseLink" download>⬇</a>
     </div>
-    <div class="download-row print" id="rowExercisePrint" style="display:none;">
-      <img id="modalExercisePrintImg" alt="Photocopie exercices" loading="lazy" decoding="async">
-      <span class="label">📎 Photocopie à coller</span>
-      <a class="btn" id="modalExercisePrintLink" download>⬇</a>
-    </div>
+    <div id="exercisePrintContainer"></div>
 
     <button class="sheet-close" id="modalClose">Fermer</button>
   </div>
@@ -233,13 +225,6 @@
   let allData = {};
   let currentLevel = null;
   let loadFailed = false;
-
-  // On sert data.json/images depuis le domaine Cloudflare Pages lui-même
-  // (raw.githubusercontent.com a un cache CDN peu fiable, parfois plusieurs
-  // heures de retard). Cloudflare Pages invalide son cache à chaque déploiement,
-  // ce qui est plus rapide et prévisible.
-  const GH_RAW_BASE = '';
-  function ghUrl(path) { return path ? (GH_RAW_BASE + path) : ''; }
 
   const levelScreen = document.getElementById('levelScreen');
   const courseScreen = document.getElementById('courseScreen');
@@ -332,7 +317,7 @@
 
   async function loadData() {
     try {
-      const res = await fetch(GH_RAW_BASE + 'data.json?t=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
       allData = await res.json();
     } catch (e) {
       allData = fallbackData;
@@ -383,76 +368,44 @@
     const img = document.getElementById('modal' + prefix + 'Img');
     const link = document.getElementById('modal' + prefix + 'Link');
     const row = link.closest('.download-row');
-    const hasFile = typeof filePath === 'string' && filePath.trim() !== '';
-
-    if (hasFile) {
-      img.src = ghUrl(filePath);
+    if (filePath) {
+      img.src = filePath;
       img.style.visibility = 'visible';
-      link.href = ghUrl(filePath);
-      link.dataset.url = ghUrl(filePath);
-      link.dataset.filename = filePath.split('/').pop();
+      link.href = filePath;
       link.classList.remove('disabled');
       link.textContent = '⬇';
       link.removeAttribute('aria-disabled');
       row.classList.remove('missing');
-      row.style.display = 'flex';
     } else {
       img.removeAttribute('src');
       img.style.visibility = 'hidden';
       link.removeAttribute('href');
-      delete link.dataset.url;
-      delete link.dataset.filename;
-      link.classList.remove('disabled');
-      link.removeAttribute('aria-disabled');
-      row.classList.remove('missing');
-      row.style.display = 'none';
+      link.classList.add('disabled');
+      link.textContent = '✕';
+      link.setAttribute('aria-disabled', 'true');
+      row.classList.add('missing');
     }
   }
 
-  function setOptionalRow(rowId, imgId, linkId, filePath) {
-    const row = document.getElementById(rowId);
-    const link = document.getElementById(linkId);
-    if (filePath) {
-      document.getElementById(imgId).src = ghUrl(filePath);
-      link.href = ghUrl(filePath);
-      link.dataset.url = ghUrl(filePath);
-      link.dataset.filename = filePath.split('/').pop();
-      row.style.display = 'flex';
-    } else {
-      delete link.dataset.url;
-      delete link.dataset.filename;
-      row.style.display = 'none';
-    }
+  function toFileArray(entry, pluralKey, singularKey) {
+    if (Array.isArray(entry[pluralKey]) && entry[pluralKey].length) return entry[pluralKey];
+    if (entry[singularKey]) return [entry[singularKey]];
+    return [];
   }
 
-  // Téléchargement forcé (via blob) : l'attribut download seul ne fonctionne
-  // pas de manière fiable pour des fichiers cross-origin (raw.githubusercontent.com).
-  // Repli : ouverture directe si le téléchargement échoue (ex: hors-ligne).
-  async function forceDownload(url, filename) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = filename || 'fichier';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 15000);
-    } catch (e) {
-      window.open(url, '_blank');
-    }
-  }
-
-  ['modalCourseLink', 'modalCoursePrintLink', 'modalExerciseLink', 'modalExercisePrintLink'].forEach(id => {
-    document.getElementById(id).addEventListener('click', function (e) {
-      if (!this.dataset.url) return;
-      e.preventDefault();
-      forceDownload(this.dataset.url, this.dataset.filename);
+  function renderPrintRows(containerId, files) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    files.forEach((path, i) => {
+      const row = document.createElement('div');
+      row.className = 'download-row print';
+      row.innerHTML = `
+        <img src="${path}" alt="Photocopie ${i + 1}" loading="lazy" decoding="async">
+        <span class="label">📎 Photocopie${files.length > 1 ? ' ' + (i + 1) : ''}</span>
+        <a class="btn" href="${path}" download>⬇</a>`;
+      container.appendChild(row);
     });
-  });
+  }
 
   function openSheet(c) {
     document.getElementById('modalTitle').textContent = c.title || 'Sans titre';
@@ -460,8 +413,8 @@
     document.getElementById('modalDate').textContent = c.date ? ('Ajouté le ' + formatDate(c.date)) : '';
     setDownloadRow('Course', c.courseFile);
     setDownloadRow('Exercise', c.exerciseFile);
-    setOptionalRow('rowCoursePrint', 'modalCoursePrintImg', 'modalCoursePrintLink', c.coursePrintFile);
-    setOptionalRow('rowExercisePrint', 'modalExercisePrintImg', 'modalExercisePrintLink', c.exercisePrintFile);
+    renderPrintRows('coursePrintContainer', toFileArray(c, 'coursePrintFiles', 'coursePrintFile'));
+    renderPrintRows('exercisePrintContainer', toFileArray(c, 'exercisePrintFiles', 'exercisePrintFile'));
     overlay.classList.add('open');
     markViewed(c.id);
     renderCourses();
