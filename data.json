@@ -1,16 +1,5 @@
 {
-  "1APIC": [
-    {
-      "id": "sassnsnsds-mufwb36j",
-      "title": "sassnsnsds",
-      "subject": "Test",
-      "courseFile": null,
-      "exerciseFile": "images/1APIC/sassnsnsds-mufwb36j-exo.png",
-      "coursePrintFile": null,
-      "exercisePrintFile": null,
-      "date": "2026-09-24T18:59:00.591Z"
-    }
-  ],
+  "1APIC": [],
   "2APIC": [],
   "3APIC": []
 }
