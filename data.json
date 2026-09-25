@@ -1,24 +1,5 @@
 {
   "1APIC": [],
-  "2APIC": [
-    {
-      "id": "correction-muh8aoqw",
-      "title": "Correction",
-      "subject": "Correction de l'évaluation diagnostique",
-      "courseFile": null,
-      "exerciseFile": "images/2APIC/correction-muh8aoqw-exo.jpg",
-      "coursePrintFiles": [],
-      "exercisePrintFiles": [
-        "images/2APIC/correction-muh8aoqw-exo-photocopie-1.png",
-        "images/2APIC/correction-muh8aoqw-exo-photocopie-2.png",
-        "images/2APIC/correction-muh8aoqw-exo-photocopie-muh8fi55-0.png",
-        "images/2APIC/correction-muh8aoqw-exo-photocopie-muh8fjtu-1.jpg",
-        "images/2APIC/correction-muh8aoqw-exo-photocopie-muh8fm0x-2.jpg",
-        "images/2APIC/correction-muh8aoqw-exo-photocopie-muh8fo09-3.png",
-        "images/2APIC/correction-muh8aoqw-exo-photocopie-muh8fpi2-4.png"
-      ],
-      "date": "2026-09-25T17:22:27.512Z"
-    }
-  ],
+  "2APIC": [],
   "3APIC": []
 }
