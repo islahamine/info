@@ -1,5 +1,20 @@
 {
   "1APIC": [],
-  "2APIC": [],
+  "2APIC": [
+    {
+      "id": "correction-muh9g4zt",
+      "title": "Correction",
+      "subject": "Correction de l'évaluation diagnostique",
+      "courseFile": null,
+      "exerciseFile": "images/2APIC/correction-muh9g4zt-exo.jpg",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [
+        "images/2APIC/correction-muh9g4zt-exo-photocopie-1.png",
+        "images/2APIC/correction-muh9g4zt-exo-photocopie-2.png",
+        "images/2APIC/correction-muh9g4zt-exo-photocopie-3.png"
+      ],
+      "date": "2026-09-25T17:54:44.926Z"
+    }
+  ],
   "3APIC": []
 }
