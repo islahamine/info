@@ -209,21 +209,13 @@
       <span class="label">📘 Cours</span>
       <a class="btn" id="modalCourseLink" download>⬇</a>
     </div>
-    <div class="download-row print" id="rowCoursePrint" style="display:none;">
-      <img id="modalCoursePrintImg" alt="Photocopie cours" loading="lazy" decoding="async">
-      <span class="label">📎 Photocopie à coller</span>
-      <a class="btn" id="modalCoursePrintLink" download>⬇</a>
-    </div>
+    <div id="coursePrintContainer"></div>
     <div class="download-row exercise">
       <img id="modalExerciseImg" alt="Exercices" loading="lazy" decoding="async">
       <span class="label">✏️ Exercices</span>
       <a class="btn" id="modalExerciseLink" download>⬇</a>
     </div>
-    <div class="download-row print" id="rowExercisePrint" style="display:none;">
-      <img id="modalExercisePrintImg" alt="Photocopie exercices" loading="lazy" decoding="async">
-      <span class="label">📎 Photocopie à coller</span>
-      <a class="btn" id="modalExercisePrintLink" download>⬇</a>
-    </div>
+    <div id="exercisePrintContainer"></div>
 
     <button class="sheet-close" id="modalClose">Fermer</button>
   </div>
@@ -399,14 +391,31 @@
   }
 
   function setOptionalRow(rowId, imgId, linkId, filePath) {
-    const row = document.getElementById(rowId);
-    if (filePath) {
-      document.getElementById(imgId).src = filePath;
-      document.getElementById(linkId).href = filePath;
-      row.style.display = 'flex';
-    } else {
-      row.style.display = 'none';
-    }
+    // conservée pour compatibilité, plus utilisée directement
+  }
+
+  function renderPrintRows(containerId, files) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    if (!files || files.length === 0) return;
+    const frag = document.createDocumentFragment();
+    files.forEach((filePath, idx) => {
+      if (!filePath) return;
+      const row = document.createElement('div');
+      row.className = 'download-row print';
+      row.innerHTML = `
+        <img alt="Image ${idx + 1} à coller" loading="lazy" decoding="async" src="${filePath}">
+        <span class="label">📎 Image ${idx + 1} à coller</span>
+        <a class="btn" href="${filePath}" download>⬇</a>`;
+      frag.appendChild(row);
+    });
+    container.appendChild(frag);
+  }
+
+  function collectPrintFiles(c, pluralKey, singularKey) {
+    const arr = Array.isArray(c[pluralKey]) ? c[pluralKey].filter(Boolean) : [];
+    if (c[singularKey] && !arr.includes(c[singularKey])) arr.unshift(c[singularKey]);
+    return arr;
   }
 
   function openSheet(c) {
@@ -415,8 +424,8 @@
     document.getElementById('modalDate').textContent = c.date ? ('Ajouté le ' + formatDate(c.date)) : '';
     setDownloadRow('Course', c.courseFile);
     setDownloadRow('Exercise', c.exerciseFile);
-    setOptionalRow('rowCoursePrint', 'modalCoursePrintImg', 'modalCoursePrintLink', c.coursePrintFile);
-    setOptionalRow('rowExercisePrint', 'modalExercisePrintImg', 'modalExercisePrintLink', c.exercisePrintFile);
+    renderPrintRows('coursePrintContainer', collectPrintFiles(c, 'coursePrintFiles', 'coursePrintFile'));
+    renderPrintRows('exercisePrintContainer', collectPrintFiles(c, 'exercisePrintFiles', 'exercisePrintFile'));
     overlay.classList.add('open');
     markViewed(c.id);
     renderCourses();
