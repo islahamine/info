@@ -1,5 +1,16 @@
 {
-  "1APIC": [],
+  "1APIC": [
+    {
+      "id": "notion-d-information-mui5sfv4",
+      "title": "notion d'information",
+      "subject": "Unité 1 - Séquence 1 - Cours 1",
+      "courseFile": "images/1APIC/notion-d-information-mui5sfv4-cours.PNG",
+      "exerciseFile": "images/1APIC/notion-d-information-mui5sfv4-exo.png",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [],
+      "date": "2026-09-26T09:00:00.197Z"
+    }
+  ],
   "2APIC": [
     {
       "id": "correction-muh9g4zt",
