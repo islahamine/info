@@ -39,6 +39,18 @@
         "images/3APIC/correction-muhacf5n-exo-photocopie-1.png"
       ],
       "date": "2026-09-25T18:19:48.212Z"
+    },
+    {
+      "id": "cours-1-le-reseau-lan-et-man-mur5ulca",
+      "title": "Cours 1 : le Réseau LAN et MAN",
+      "subject": "Unité 1 : Typologie Réseau",
+      "courseFile": "images/3APIC/cours-1-le-reseau-lan-et-man-mur5ulca-cours.jpg",
+      "exerciseFile": "images/3APIC/cours-1-le-reseau-lan-et-man-mur5ulca-exo.png",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [
+        "images/3APIC/cours-1-le-reseau-lan-et-man-mur5ulca-exo-photocopie-1.png"
+      ],
+      "date": "2026-10-02T16:11:39.931Z"
     }
   ]
 }
