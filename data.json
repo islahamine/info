@@ -35,6 +35,16 @@
         "images/2APIC/correction-muh9g4zt-exo-photocopie-3.png"
       ],
       "date": "2026-09-25T17:54:44.926Z"
+    },
+    {
+      "id": "cours-1-notion-de-reseau-informatique-mur6d8in",
+      "title": "Cours 1 : notion de réseau informatique",
+      "subject": "Unité 1 - Séquence 1 - Environnement matériel d’un système informatique",
+      "courseFile": "images/2APIC/cours-1-notion-de-reseau-informatique-mur6d8in-cours.png",
+      "exerciseFile": "images/2APIC/cours-1-notion-de-reseau-informatique-mur6d8in-exo.png",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [],
+      "date": "2026-10-02T16:26:06.991Z"
     }
   ],
   "3APIC": [
