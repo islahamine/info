@@ -35,6 +35,18 @@
       "coursePrintFiles": [],
       "exercisePrintFiles": [],
       "date": "2026-10-02T16:26:06.991Z"
+    },
+    {
+      "id": "cours-2-configuration-materielles-monoposte-mv2ebbeu",
+      "title": "cours 2 : Configuration matérielles monoposte",
+      "subject": "Unité 1 : Environnement matériel d’un système informatique",
+      "courseFile": "images/2APIC/cours-2-configuration-materielles-monoposte-mv2ebbeu-cours.jpg",
+      "exerciseFile": "images/2APIC/cours-2-configuration-materielles-monoposte-mv2ebbeu-exo.png",
+      "coursePrintFiles": [
+        "images/2APIC/cours-2-configuration-materielles-monoposte-mv2ebbeu-cours-photocopie-1.png"
+      ],
+      "exercisePrintFiles": [],
+      "date": "2026-10-10T12:54:17.544Z"
     }
   ],
   "3APIC": [
