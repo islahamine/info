@@ -83,6 +83,16 @@
         "images/3APIC/cours-1-le-reseau-lan-et-man-mur5ulca-exo-photocopie-1.png"
       ],
       "date": "2026-10-02T16:11:39.931Z"
+    },
+    {
+      "id": "cours-2-reseau-wan-mv2eqrw2",
+      "title": "Cours 2 : Réseau WAN",
+      "subject": "Unité 1 : Typologie Réseau",
+      "courseFile": "images/3APIC/cours-2-reseau-wan-mv2eqrw2-cours.PNG",
+      "exerciseFile": "images/3APIC/cours-2-reseau-wan-mv2eqrw2-exo.png",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [],
+      "date": "2026-10-10T13:06:04.263Z"
     }
   ]
 }
