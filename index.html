@@ -97,6 +97,48 @@
   }
   .date-text { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
 
+  /* ---- Club Robotique ---- */
+  .b4 { background: #0891b2; }
+  .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .grid-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
+    box-shadow: var(--shadow); overflow: hidden; cursor: pointer; user-select: none;
+    transition: transform 0.1s ease;
+  }
+  .grid-card:active { transform: scale(0.98); }
+  .grid-card h3 { margin: 0; font-size: 1rem; line-height: 1.3; overflow-wrap: anywhere; }
+  .grid-body { padding: 12px; }
+  .grid-body .new-badge { margin: 6px 0 0; }
+  .seance-cover {
+    position: relative; aspect-ratio: 16 / 10; background: linear-gradient(135deg, #0891b2, #4f46e5);
+    display: flex; align-items: center; justify-content: center; font-size: 2.2rem;
+  }
+  .seance-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .club-title { margin: 2px 0 12px; font-size: 1.3rem; line-height: 1.25; }
+  .seance-desc { white-space: pre-wrap; margin: 10px 0 0; }
+  #seanceTitle { margin-bottom: 2px; }
+  #taskGrid { margin-top: 16px; }
+  .task-card { border-top: 5px solid var(--task-color); }
+  .task-icon { font-size: 1.6rem; padding: 12px 12px 0; }
+  .task-card .grid-body { padding-top: 6px; }
+  .task-type { display: block; font-size: 0.75rem; font-weight: 700; color: var(--task-color); margin-bottom: 3px; }
+  .type-tutoriel { --task-color: #4f46e5; }
+  .type-exercice { --task-color: #059669; }
+  .type-lien { --task-color: #0891b2; }
+  .type-info { --task-color: #ea580c; }
+  .task-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 14px; }
+  .task-link {
+    display: block; text-align: center; text-decoration: none; background: var(--accent); color: white;
+    padding: 13px; border-radius: 12px; font-weight: 600; margin-bottom: 14px;
+  }
+  .task-image { margin-bottom: 14px; }
+  .task-image img { display: block; width: 100%; border-radius: 12px; background: #eef0f4; }
+  .task-image a { display: block; text-align: center; padding: 8px; color: var(--accent); font-size: 0.9rem; font-weight: 600; text-decoration: none; }
+  .task-file {
+    display: block; border: 1px solid var(--border); border-radius: 12px; padding: 13px; margin-bottom: 10px;
+    color: var(--text); text-decoration: none; font-weight: 600; overflow-wrap: anywhere;
+  }
+
   .empty-state, .error-state { text-align: center; color: var(--muted); padding: 50px 20px; }
 
   /* ---- Skeleton loading ---- */
@@ -196,6 +238,11 @@
       <span class="txt"><h2>3APIC</h2><p>3ème année<span class="count" id="count-3APIC"></span></p></span>
       <span class="arrow">›</span>
     </div>
+    <div class="level-card" id="clubCard">
+      <span class="badge b4">🤖</span>
+      <span class="txt"><h2>Club Robotique</h2><p>Tous les niveaux<span class="count" id="count-club"></span></p></span>
+      <span class="arrow">›</span>
+    </div>
   </div>
 
   <div id="courseScreen" style="display:none;">
@@ -203,6 +250,22 @@
     <div class="search-wrap"><input type="text" id="searchInput" placeholder="Rechercher..."></div>
     <div class="list" id="courseList"></div>
     <div class="empty-state" id="emptyState" style="display:none;">Aucun cours trouvé.</div>
+  </div>
+
+  <div id="clubScreen" style="display:none;">
+    <button class="back-btn" id="clubBack">‹ Accueil</button>
+    <h2 class="club-title">🤖 Club Robotique</h2>
+    <div class="card-grid" id="seanceGrid"></div>
+    <div class="empty-state" id="clubEmpty" style="display:none;"></div>
+  </div>
+
+  <div id="seanceScreen" style="display:none;">
+    <button class="back-btn" id="seanceBack">‹ Séances</button>
+    <h2 class="club-title" id="seanceTitle"></h2>
+    <div class="date-text" id="seanceDate"></div>
+    <p class="seance-desc" id="seanceDesc"></p>
+    <div class="card-grid" id="taskGrid"></div>
+    <div class="empty-state" id="seanceEmpty" style="display:none;">Aucune tâche pour le moment.</div>
   </div>
 </main>
 
@@ -227,6 +290,18 @@
     <div id="exercisePrintContainer"></div>
 
     <button class="sheet-close" id="modalClose">Fermer</button>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="taskOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3 id="taskTitle"></h3>
+    <span class="subject-tag" id="taskType"></span>
+    <p class="task-text" id="taskText"></p>
+    <a class="task-link" id="taskLink" target="_blank" rel="noopener">🔗 Ouvrir le lien</a>
+    <div id="taskMedia"></div>
+    <button class="sheet-close" id="taskClose">Fermer</button>
   </div>
 </div>
 
@@ -310,6 +385,7 @@
     ['1APIC', '2APIC', '3APIC'].forEach(lvl => {
       (allData[lvl] || []).forEach(c => { if (!viewed.has(c.id)) newCount++; });
     });
+    newCount += unseenSeances();
     document.title = newCount > 0 ? `(${newCount}) Cours` : 'Cours';
     drawFavicon(newCount);
   }
@@ -340,10 +416,13 @@
 
   function refreshData() {
     dataReady = false;
-    return loadData().then(() => {
+    clubReady = false;
+    return Promise.all([loadData(), loadClub()]).then(() => {
       updateLevelCounts();
+      updateClubCount();
       updateBadge();
       if (currentLevel) renderCourses();
+      if (clubOpen && clubScreen.style.display !== 'none') renderClub();
     });
   }
 
@@ -484,6 +563,197 @@
     updateBadge();
   }
 
+  // ---- Club Robotique ----
+  const TASK_TYPES = {
+    tutoriel: { label: 'Tutoriel', icon: '📘', cls: 'type-tutoriel' },
+    exercice: { label: 'Exercice', icon: '✏️', cls: 'type-exercice' },
+    lien: { label: 'Lien', icon: '🔗', cls: 'type-lien' },
+    info: { label: 'Information', icon: '💡', cls: 'type-info' }
+  };
+  const clubScreen = document.getElementById('clubScreen');
+  const seanceScreen = document.getElementById('seanceScreen');
+  const taskOverlay = document.getElementById('taskOverlay');
+  let clubData = { seances: [] };
+  let clubReady = false;
+  let clubFailed = false;
+  let clubOpen = false;
+
+  async function loadClub() {
+    try {
+      const res = await fetch('robotique.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      clubData = await res.json();
+      if (!Array.isArray(clubData.seances)) clubData.seances = [];
+      clubFailed = false;
+    } catch (e) {
+      clubData = { seances: [] };
+      clubFailed = true;
+    }
+    clubReady = true;
+  }
+
+  function seanceViewId(s) { return 'seance:' + s.id; }
+
+  function updateClubCount() {
+    const el = document.getElementById('count-club');
+    if (el) el.textContent = clubFailed ? '' : ' • ' + clubData.seances.length + ' séance' + (clubData.seances.length > 1 ? 's' : '');
+  }
+
+  function unseenSeances() {
+    const viewed = getViewedSet();
+    return clubData.seances.filter(s => !viewed.has(seanceViewId(s))).length;
+  }
+
+  function openClub() {
+    clubOpen = true;
+    levelScreen.style.display = 'none';
+    seanceScreen.style.display = 'none';
+    clubScreen.style.display = 'block';
+    if (clubFailed) refreshData();
+    renderClub();
+  }
+
+  function renderClub() {
+    const grid = document.getElementById('seanceGrid');
+    const empty = document.getElementById('clubEmpty');
+    grid.innerHTML = '';
+    empty.style.display = 'none';
+    if (!clubReady) {
+      empty.textContent = 'Chargement...';
+      empty.style.display = 'block';
+      return;
+    }
+    if (clubFailed || clubData.seances.length === 0) {
+      empty.textContent = clubFailed
+        ? 'Connexion impossible — vérifiez votre réseau et réessayez.'
+        : 'Aucune séance pour le moment.';
+      empty.style.display = 'block';
+      return;
+    }
+    const viewed = getViewedSet();
+    [...clubData.seances]
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+      .forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'grid-card';
+        card.innerHTML = `
+          <div class="seance-cover"><span>🤖</span></div>
+          <div class="grid-body">
+            <h3></h3>
+            <div class="date-text"></div>
+          </div>`;
+        if (s.cover) {
+          const img = document.createElement('img');
+          img.src = s.cover;
+          img.alt = '';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          img.onerror = () => img.remove();
+          card.querySelector('.seance-cover').appendChild(img);
+        }
+        card.querySelector('h3').textContent = s.title || 'Sans titre';
+        card.querySelector('.date-text').textContent = formatDate(s.date);
+        if (!viewed.has(seanceViewId(s))) {
+          const badge = document.createElement('span');
+          badge.className = 'new-badge';
+          badge.textContent = 'NOUVEAU';
+          card.querySelector('.grid-body').appendChild(badge);
+        }
+        card.addEventListener('click', () => openSeance(s));
+        grid.appendChild(card);
+      });
+  }
+
+  function openSeance(s) {
+    markViewed(seanceViewId(s));
+    updateBadge();
+    clubScreen.style.display = 'none';
+    seanceScreen.style.display = 'block';
+    window.scrollTo(0, 0);
+    document.getElementById('seanceTitle').textContent = s.title || 'Sans titre';
+    document.getElementById('seanceDate').textContent = formatDate(s.date);
+    const desc = document.getElementById('seanceDesc');
+    desc.textContent = s.description || '';
+    desc.style.display = s.description ? 'block' : 'none';
+
+    const tasks = Array.isArray(s.tasks) ? s.tasks : [];
+    const grid = document.getElementById('taskGrid');
+    grid.innerHTML = '';
+    document.getElementById('seanceEmpty').style.display = tasks.length === 0 ? 'block' : 'none';
+    tasks.forEach(t => {
+      const type = TASK_TYPES[t.type] || TASK_TYPES.info;
+      const card = document.createElement('div');
+      card.className = 'grid-card task-card ' + type.cls;
+      card.innerHTML = `
+        <div class="task-icon"></div>
+        <div class="grid-body">
+          <span class="task-type"></span>
+          <h3></h3>
+        </div>`;
+      card.querySelector('.task-icon').textContent = type.icon;
+      card.querySelector('.task-type').textContent = type.label;
+      card.querySelector('h3').textContent = t.title || 'Sans titre';
+      card.addEventListener('click', () => openTask(t));
+      grid.appendChild(card);
+    });
+  }
+
+  function openTask(t) {
+    const type = TASK_TYPES[t.type] || TASK_TYPES.info;
+    document.getElementById('taskTitle').textContent = t.title || 'Sans titre';
+    document.getElementById('taskType').textContent = type.icon + ' ' + type.label;
+    const text = document.getElementById('taskText');
+    text.textContent = t.text || '';
+    text.style.display = t.text ? 'block' : 'none';
+
+    const link = document.getElementById('taskLink');
+    const safeLink = typeof t.link === 'string' && /^https?:\/\//i.test(t.link);
+    link.style.display = safeLink ? 'block' : 'none';
+    if (safeLink) link.href = t.link; else link.removeAttribute('href');
+
+    const media = document.getElementById('taskMedia');
+    media.innerHTML = '';
+    (t.images || []).forEach((path, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'task-image';
+      const img = document.createElement('img');
+      img.src = path;
+      img.alt = 'Image ' + (i + 1);
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      const a = document.createElement('a');
+      a.href = path;
+      a.download = '';
+      a.textContent = '⬇ Télécharger l\'image';
+      wrap.appendChild(img);
+      wrap.appendChild(a);
+      media.appendChild(wrap);
+    });
+    (t.files || []).forEach(f => {
+      const a = document.createElement('a');
+      a.className = 'task-file';
+      a.href = f.path;
+      a.download = f.name || '';
+      a.textContent = '📎 ' + (f.name || 'Fichier');
+      media.appendChild(a);
+    });
+    taskOverlay.classList.add('open');
+  }
+
+  document.getElementById('clubCard').addEventListener('click', openClub);
+  document.getElementById('clubBack').addEventListener('click', () => {
+    clubOpen = false;
+    clubScreen.style.display = 'none';
+    levelScreen.style.display = 'flex';
+  });
+  document.getElementById('seanceBack').addEventListener('click', () => {
+    seanceScreen.style.display = 'none';
+    clubScreen.style.display = 'block';
+    renderClub();
+  });
+  document.getElementById('taskClose').addEventListener('click', () => taskOverlay.classList.remove('open'));
+  taskOverlay.addEventListener('click', (e) => { if (e.target === taskOverlay) taskOverlay.classList.remove('open'); });
+
   document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
 
@@ -493,7 +763,7 @@
     currentLevel = null;
   });
 
-  document.querySelectorAll('.level-card').forEach(el => {
+  document.querySelectorAll('.level-card[data-level]').forEach(el => {
     el.addEventListener('click', () => openLevel(el.dataset.level));
   });
 

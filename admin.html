@@ -68,6 +68,18 @@
     padding:10px 12px; border-radius:8px; margin-bottom:14px;
   }
   .editing-banner.show { display:block; }
+  textarea, input[type=date], input[type=url] {
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.95rem;
+    background:white; color:var(--text); font-family:inherit;
+  }
+  textarea { min-height:120px; resize:vertical; }
+  .tabs { display:flex; gap:8px; margin-bottom:20px; }
+  .tabs button { margin:0; background:#e8e9f5; color:var(--accent); }
+  .tabs button:hover { background:#dcdef0; }
+  .tabs button.active { background:var(--accent); color:white; }
+  .attachment-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; font-size:0.85rem; overflow-wrap:anywhere; }
+  .course-row .actions { flex-wrap:wrap; justify-content:flex-end; }
+  .icon-btn:disabled { opacity:0.35; }
 </style>
 </head>
 <body>
@@ -92,6 +104,13 @@
     <p class="hint">Créez-le sur GitHub → Settings → Developer settings → Personal access tokens → Fine-grained token, avec accès en lecture/écriture ("Contents") limité à ce seul dépôt.</p>
     <button id="saveConfigBtn">Enregistrer la connexion</button>
   </div>
+
+  <div class="tabs">
+    <button id="tabCourses" class="active">📚 Cours</button>
+    <button id="tabClub">🤖 Club Robotique</button>
+  </div>
+
+  <div id="coursesPanel">
 
   <div class="box">
     <h2 id="formTitle">2. Ajouter un cours</h2>
@@ -136,6 +155,61 @@
     <h2>4. Unités</h2>
     <p class="hint">Corrigez le nom d'une unité : il change partout sur le site.</p>
     <div id="unitList"></div>
+  </div>
+  </div>
+
+  <div id="clubPanel" style="display:none;">
+    <div class="box">
+      <h2 id="seanceFormTitle">Nouvelle séance</h2>
+      <p class="hint">Chaque séance apparaît comme une carte dans le Club Robotique.</p>
+      <label>Titre de la séance</label>
+      <input type="text" id="seanceName" placeholder="ex: Séance 1 : Découvrir Tinkercad">
+      <label>Date</label>
+      <input type="date" id="seanceDateInput">
+      <label>Description (optionnel)</label>
+      <textarea id="seanceDescInput" placeholder="Ce que nous avons fait pendant cette séance"></textarea>
+      <label>Image de la carte (optionnel)</label>
+      <input type="file" id="seanceCover" accept="image/*">
+      <button id="seanceSubmit">Publier la séance</button>
+      <button class="secondary" id="seanceCancel" style="display:none;">Annuler la modification</button>
+      <div class="status" id="seanceStatus"></div>
+    </div>
+
+    <div class="box">
+      <h2>Séances publiées</h2>
+      <p class="hint">Cliquez sur « Tâches » pour ajouter le contenu d'une séance.</p>
+      <div id="seanceList"></div>
+      <div class="status" id="seanceListStatus"></div>
+    </div>
+
+    <div class="box" id="taskBox" style="display:none;">
+      <h2 id="taskBoxTitle">Tâches</h2>
+      <p class="hint">Chaque tâche apparaît comme une carte dans la séance.</p>
+      <div id="taskList"></div>
+      <h2 id="taskFormTitle" style="margin-top:22px;">Nouvelle tâche</h2>
+      <label>Titre de la tâche</label>
+      <input type="text" id="taskName" placeholder="ex: Exercice 1 : Allumer une LED">
+      <label>Type</label>
+      <select id="taskTypeInput">
+        <option value="tutoriel">📘 Tutoriel</option>
+        <option value="exercice">✏️ Exercice</option>
+        <option value="lien">🔗 Lien</option>
+        <option value="info">💡 Information</option>
+      </select>
+      <label>Texte (optionnel)</label>
+      <textarea id="taskTextInput" placeholder="Les explications ou les consignes"></textarea>
+      <label>Lien (optionnel)</label>
+      <input type="url" id="taskLinkInput" placeholder="ex: https://www.tinkercad.com">
+      <label>Images (optionnel, plusieurs possibles)</label>
+      <input type="file" id="taskImages" accept="image/*" multiple>
+      <label>Fichiers (optionnel, 20 Mo maximum par fichier)</label>
+      <input type="file" id="taskFiles" multiple>
+      <div id="taskAttachments"></div>
+      <button id="taskSubmit">Publier la tâche</button>
+      <button class="secondary" id="taskCancel" style="display:none;">Annuler la modification</button>
+      <div class="status" id="taskStatus"></div>
+      <button class="secondary" id="taskBoxClose">Fermer les tâches</button>
+    </div>
   </div>
 </main>
 
@@ -583,6 +657,400 @@
       setStatus('listStatus', 'err', 'Erreur : ' + e.message);
     }
   }
+
+  // ---- Tabs ----
+  function showTab(name) {
+    $('coursesPanel').style.display = name === 'courses' ? 'block' : 'none';
+    $('clubPanel').style.display = name === 'club' ? 'block' : 'none';
+    $('tabCourses').classList.toggle('active', name === 'courses');
+    $('tabClub').classList.toggle('active', name === 'club');
+    if (name === 'club') renderSeanceList();
+  }
+  $('tabCourses').addEventListener('click', () => showTab('courses'));
+  $('tabClub').addEventListener('click', () => showTab('club'));
+
+  // ---- Club Robotique ----
+  const MAX_FILE_MB = 20;
+  const TYPE_LABELS = { tutoriel: '📘 Tutoriel', exercice: '✏️ Exercice', lien: '🔗 Lien', info: '💡 Information' };
+  let club = { seances: [] };
+  let clubSha = null;
+  let editingSeanceId = null;
+  let openSeanceId = null;
+  let editingTaskId = null;
+  let removedAttachments = [];
+
+  async function loadClubFile(conf) {
+    const file = await getFileIfExists(conf, 'robotique.json');
+    if (!file) { club = { seances: [] }; clubSha = null; return; }
+    club = JSON.parse(decodeURIComponent(escape(atob(file.content))));
+    if (!Array.isArray(club.seances)) club.seances = [];
+    clubSha = file.sha;
+  }
+
+  async function saveClubFile(conf, message) {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(club, null, 2))));
+    const result = await ghPut(conf, 'robotique.json', { message, content, branch: conf.branch, sha: clubSha || undefined });
+    clubSha = result.content.sha;
+  }
+
+  function hasConf(conf, statusId) {
+    if (conf.owner && conf.repo && conf.token) return true;
+    setStatus(statusId, 'err', 'Veuillez d\'abord enregistrer la connexion GitHub (étape 1).');
+    return false;
+  }
+
+  function slugify(text) {
+    return text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  async function resizeImage(file, max, quality) {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bmp.width * scale);
+    canvas.height = Math.round(bmp.height * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', quality).split(',')[1];
+  }
+
+  async function putFile(conf, path, content, message) {
+    const existing = await getFileIfExists(conf, path);
+    await ghPut(conf, path, { message, content, branch: conf.branch, sha: existing ? existing.sha : undefined });
+  }
+
+  async function removeFiles(conf, paths, title) {
+    for (const p of paths.filter(Boolean)) {
+      const f = await getFileIfExists(conf, p);
+      if (f) await ghDelete(conf, p, { message: `Suppression fichier: ${title}`, sha: f.sha, branch: conf.branch });
+    }
+  }
+
+  function taskPaths(task) {
+    return [...(task.images || []), ...(task.files || []).map(f => f.path)];
+  }
+
+  function findSeance(id) { return club.seances.find(s => s.id === id); }
+
+  // ---- Séances ----
+  function resetSeanceForm() {
+    editingSeanceId = null;
+    $('seanceFormTitle').textContent = 'Nouvelle séance';
+    $('seanceSubmit').textContent = 'Publier la séance';
+    $('seanceCancel').style.display = 'none';
+    $('seanceName').value = '';
+    $('seanceDateInput').value = new Date().toISOString().slice(0, 10);
+    $('seanceDescInput').value = '';
+    $('seanceCover').value = '';
+  }
+
+  function startEditSeance(s) {
+    editingSeanceId = s.id;
+    $('seanceFormTitle').textContent = 'Modifier la séance';
+    $('seanceSubmit').textContent = 'Enregistrer les modifications';
+    $('seanceCancel').style.display = 'block';
+    $('seanceName').value = s.title || '';
+    $('seanceDateInput').value = (s.date || '').slice(0, 10);
+    $('seanceDescInput').value = s.description || '';
+    $('seanceCover').value = '';
+    window.scrollTo({ top: $('seanceFormTitle').offsetTop - 20, behavior: 'smooth' });
+  }
+
+  $('seanceCancel').addEventListener('click', resetSeanceForm);
+
+  $('seanceSubmit').addEventListener('click', async () => {
+    const conf = getConf();
+    if (!hasConf(conf, 'seanceStatus')) return;
+    const title = $('seanceName').value.trim();
+    if (!title) { setStatus('seanceStatus', 'err', 'Veuillez écrire le titre de la séance.'); return; }
+    const date = $('seanceDateInput').value || new Date().toISOString().slice(0, 10);
+    const description = $('seanceDescInput').value.trim();
+    const coverFile = $('seanceCover').files[0];
+
+    $('seanceSubmit').disabled = true;
+    setStatus('seanceStatus', 'loading', 'Publication en cours...');
+    try {
+      await loadClubFile(conf);
+      let seance = editingSeanceId ? findSeance(editingSeanceId) : null;
+      if (editingSeanceId && !seance) throw new Error('Séance introuvable.');
+      const isNew = !seance;
+      if (isNew) {
+        seance = { id: (slugify(title) || 'seance') + '-' + Date.now().toString(36), title, date, description, cover: null, tasks: [] };
+        club.seances.push(seance);
+      } else {
+        seance.title = title;
+        seance.date = date;
+        seance.description = description;
+      }
+      if (coverFile) {
+        const path = `club/${seance.id}/cover.jpg`;
+        await putFile(conf, path, await resizeImage(coverFile, 640, 0.7), `Image séance: ${title}`);
+        seance.cover = path;
+      }
+      await saveClubFile(conf, `${isNew ? 'Ajout' : 'Modification'} séance: ${title}`);
+      setStatus('seanceStatus', 'ok', `"${title}" enregistrée !`);
+      resetSeanceForm();
+      renderSeances();
+      if (isNew) openTasks(seance.id);
+    } catch (e) {
+      setStatus('seanceStatus', 'err', 'Erreur : ' + e.message);
+    } finally {
+      $('seanceSubmit').disabled = false;
+    }
+  });
+
+  async function renderSeanceList() {
+    const conf = getConf();
+    if (!hasConf(conf, 'seanceListStatus')) return;
+    setStatus('seanceListStatus', 'loading', 'Chargement...');
+    try {
+      await loadClubFile(conf);
+      renderSeances();
+      $('seanceListStatus').className = 'status';
+      $('seanceListStatus').textContent = '';
+    } catch (e) {
+      setStatus('seanceListStatus', 'err', 'Erreur : ' + e.message);
+    }
+  }
+
+  function renderSeances() {
+    const container = $('seanceList');
+    container.innerHTML = '';
+    if (club.seances.length === 0) {
+      container.innerHTML = '<div class="empty-hint">Aucune séance pour le moment.</div>';
+    }
+    [...club.seances]
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+      .forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'course-row';
+        row.innerHTML = `
+          <span class="info"><span class="subject"></span><div class="title"></div></span>
+          <span class="actions">
+            <button class="icon-btn edit tasks">📋 Tâches</button>
+            <button class="icon-btn edit rename">✏️</button>
+            <button class="icon-btn delete">🗑️</button>
+          </span>`;
+        row.querySelector('.subject').textContent = `${s.date || ''} • ${(s.tasks || []).length} tâche(s)`;
+        row.querySelector('.title').textContent = s.title;
+        row.querySelector('.tasks').addEventListener('click', () => openTasks(s.id));
+        row.querySelector('.rename').addEventListener('click', () => startEditSeance(s));
+        row.querySelector('.delete').addEventListener('click', () => deleteSeance(s));
+        container.appendChild(row);
+      });
+    if (openSeanceId && findSeance(openSeanceId)) renderTasks();
+    else closeTasks();
+  }
+
+  async function deleteSeance(s) {
+    if (!confirm(`Supprimer "${s.title}" et toutes ses tâches ? Cette action est définitive.`)) return;
+    const conf = getConf();
+    setStatus('seanceListStatus', 'loading', 'Suppression en cours...');
+    try {
+      await loadClubFile(conf);
+      const seance = findSeance(s.id);
+      if (!seance) throw new Error('Séance introuvable.');
+      club.seances = club.seances.filter(x => x.id !== s.id);
+      await saveClubFile(conf, `Suppression séance: ${s.title}`);
+      await removeFiles(conf, [seance.cover, ...(seance.tasks || []).flatMap(taskPaths)], s.title);
+      if (editingSeanceId === s.id) resetSeanceForm();
+      setStatus('seanceListStatus', 'ok', `"${s.title}" supprimée.`);
+      renderSeances();
+    } catch (e) {
+      setStatus('seanceListStatus', 'err', 'Erreur : ' + e.message);
+    }
+  }
+
+  // ---- Tâches ----
+  function openTasks(id) {
+    openSeanceId = id;
+    resetTaskForm();
+    $('taskBox').style.display = 'block';
+    renderTasks();
+    window.scrollTo({ top: $('taskBox').offsetTop - 20, behavior: 'smooth' });
+  }
+
+  function closeTasks() {
+    openSeanceId = null;
+    $('taskBox').style.display = 'none';
+  }
+
+  function resetTaskForm() {
+    editingTaskId = null;
+    removedAttachments = [];
+    $('taskFormTitle').textContent = 'Nouvelle tâche';
+    $('taskSubmit').textContent = 'Publier la tâche';
+    $('taskCancel').style.display = 'none';
+    $('taskName').value = '';
+    $('taskTypeInput').value = 'tutoriel';
+    $('taskTextInput').value = '';
+    $('taskLinkInput').value = '';
+    $('taskImages').value = '';
+    $('taskFiles').value = '';
+    $('taskAttachments').innerHTML = '';
+  }
+
+  function startEditTask(t) {
+    resetTaskForm();
+    editingTaskId = t.id;
+    $('taskFormTitle').textContent = 'Modifier la tâche';
+    $('taskSubmit').textContent = 'Enregistrer les modifications';
+    $('taskCancel').style.display = 'block';
+    $('taskName').value = t.title || '';
+    $('taskTypeInput').value = t.type || 'info';
+    $('taskTextInput').value = t.text || '';
+    $('taskLinkInput').value = t.link || '';
+    const list = [...(t.images || []).map(p => ({ path: p, name: p.split('/').pop() })), ...(t.files || [])];
+    list.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'attachment-row';
+      row.innerHTML = '<span></span><button class="icon-btn delete">🗑️</button>';
+      row.querySelector('span').textContent = item.name;
+      row.querySelector('button').addEventListener('click', () => {
+        removedAttachments.push(item.path);
+        row.remove();
+      });
+      $('taskAttachments').appendChild(row);
+    });
+    window.scrollTo({ top: $('taskBox').offsetTop - 20, behavior: 'smooth' });
+  }
+
+  $('taskCancel').addEventListener('click', resetTaskForm);
+  $('taskBoxClose').addEventListener('click', closeTasks);
+
+  $('taskSubmit').addEventListener('click', async () => {
+    const conf = getConf();
+    if (!hasConf(conf, 'taskStatus')) return;
+    const title = $('taskName').value.trim();
+    if (!title) { setStatus('taskStatus', 'err', 'Veuillez écrire le titre de la tâche.'); return; }
+    let link = $('taskLinkInput').value.trim();
+    if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
+    const images = Array.from($('taskImages').files);
+    const files = Array.from($('taskFiles').files);
+    const tooBig = files.find(f => f.size > MAX_FILE_MB * 1024 * 1024);
+    if (tooBig) {
+      setStatus('taskStatus', 'err', `"${tooBig.name}" dépasse ${MAX_FILE_MB} Mo. Pour une vidéo, utilisez plutôt un lien YouTube.`);
+      return;
+    }
+
+    $('taskSubmit').disabled = true;
+    setStatus('taskStatus', 'loading', 'Publication en cours...');
+    try {
+      await loadClubFile(conf);
+      const seance = findSeance(openSeanceId);
+      if (!seance) throw new Error('Séance introuvable.');
+      if (!Array.isArray(seance.tasks)) seance.tasks = [];
+      let task = editingTaskId ? seance.tasks.find(t => t.id === editingTaskId) : null;
+      if (editingTaskId && !task) throw new Error('Tâche introuvable.');
+      const isNew = !task;
+      if (isNew) {
+        task = { id: 't-' + Date.now().toString(36), title, type: 'info', text: '', link: '', images: [], files: [] };
+        seance.tasks.push(task);
+      }
+      task.title = title;
+      task.type = $('taskTypeInput').value;
+      task.text = $('taskTextInput').value.trim();
+      task.link = link;
+      task.images = (task.images || []).filter(p => !removedAttachments.includes(p));
+      task.files = (task.files || []).filter(f => !removedAttachments.includes(f.path));
+
+      const stamp = Date.now().toString(36);
+      for (let i = 0; i < images.length; i++) {
+        const path = `club/${seance.id}/${task.id}-image-${stamp}-${i + 1}.jpg`;
+        await putFile(conf, path, await resizeImage(images[i], 1400, 0.8), `Ajout image: ${title}`);
+        task.images.push(path);
+      }
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const path = `club/${seance.id}/${task.id}-fichier-${stamp}-${i + 1}.${f.name.split('.').pop()}`;
+        await putFile(conf, path, await fileToBase64(f), `Ajout fichier: ${title}`);
+        task.files.push({ name: f.name, path });
+      }
+
+      await saveClubFile(conf, `${isNew ? 'Ajout' : 'Modification'} tâche: ${title}`);
+      await removeFiles(conf, removedAttachments, title);
+      setStatus('taskStatus', 'ok', `"${title}" enregistrée !`);
+      resetTaskForm();
+      renderSeances();
+    } catch (e) {
+      setStatus('taskStatus', 'err', 'Erreur : ' + e.message);
+    } finally {
+      $('taskSubmit').disabled = false;
+    }
+  });
+
+  function renderTasks() {
+    const seance = findSeance(openSeanceId);
+    if (!seance) return;
+    $('taskBoxTitle').textContent = 'Tâches : ' + seance.title;
+    const container = $('taskList');
+    container.innerHTML = '';
+    const tasks = seance.tasks || [];
+    if (tasks.length === 0) container.innerHTML = '<div class="empty-hint">Aucune tâche pour le moment.</div>';
+    tasks.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'course-row';
+      row.innerHTML = `
+        <span class="info"><span class="subject"></span><div class="title"></div></span>
+        <span class="actions">
+          <button class="icon-btn edit up">⬆️</button>
+          <button class="icon-btn edit down">⬇️</button>
+          <button class="icon-btn edit rename">✏️</button>
+          <button class="icon-btn delete">🗑️</button>
+        </span>`;
+      row.querySelector('.subject').textContent = TYPE_LABELS[t.type] || TYPE_LABELS.info;
+      row.querySelector('.title').textContent = t.title;
+      row.querySelector('.up').disabled = i === 0;
+      row.querySelector('.down').disabled = i === tasks.length - 1;
+      row.querySelector('.up').addEventListener('click', () => moveTask(t.id, -1));
+      row.querySelector('.down').addEventListener('click', () => moveTask(t.id, 1));
+      row.querySelector('.rename').addEventListener('click', () => startEditTask(t));
+      row.querySelector('.delete').addEventListener('click', () => deleteTask(t));
+      container.appendChild(row);
+    });
+  }
+
+  async function moveTask(id, delta) {
+    const conf = getConf();
+    setStatus('taskStatus', 'loading', 'Enregistrement...');
+    try {
+      await loadClubFile(conf);
+      const tasks = findSeance(openSeanceId).tasks;
+      const from = tasks.findIndex(t => t.id === id);
+      const to = from + delta;
+      if (from === -1 || to < 0 || to >= tasks.length) return;
+      tasks.splice(to, 0, tasks.splice(from, 1)[0]);
+      await saveClubFile(conf, 'Ordre des tâches');
+      setStatus('taskStatus', 'ok', 'Ordre enregistré.');
+      renderSeances();
+    } catch (e) {
+      setStatus('taskStatus', 'err', 'Erreur : ' + e.message);
+    }
+  }
+
+  async function deleteTask(t) {
+    if (!confirm(`Supprimer "${t.title}" ? Cette action est définitive.`)) return;
+    const conf = getConf();
+    setStatus('taskStatus', 'loading', 'Suppression en cours...');
+    try {
+      await loadClubFile(conf);
+      const seance = findSeance(openSeanceId);
+      const task = (seance.tasks || []).find(x => x.id === t.id);
+      if (!task) throw new Error('Tâche introuvable.');
+      seance.tasks = seance.tasks.filter(x => x.id !== t.id);
+      await saveClubFile(conf, `Suppression tâche: ${t.title}`);
+      await removeFiles(conf, taskPaths(task), t.title);
+      if (editingTaskId === t.id) resetTaskForm();
+      setStatus('taskStatus', 'ok', `"${t.title}" supprimée.`);
+      renderSeances();
+    } catch (e) {
+      setStatus('taskStatus', 'err', 'Erreur : ' + e.message);
+    }
+  }
+
+  resetSeanceForm();
 
   $('refreshBtn').addEventListener('click', renderCourseList);
 
