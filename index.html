@@ -119,21 +119,49 @@
   #seanceTitle { margin-bottom: 2px; }
   #taskGrid { margin-top: 16px; }
   .task-card { border-top: 5px solid var(--task-color); }
-  .task-icon { font-size: 1.6rem; padding: 12px 12px 0; }
-  .task-card .grid-body { padding-top: 6px; }
+  .task-preview {
+    position: relative; aspect-ratio: 16 / 10; display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; background: var(--bg); overflow: hidden;
+  }
+  .task-preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .play-badge {
+    position: absolute; width: 46px; height: 46px; border-radius: 50%; background: rgba(0,0,0,0.65); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem; padding-left: 3px;
+  }
   .task-type { display: block; font-size: 0.75rem; font-weight: 700; color: var(--task-color); margin-bottom: 3px; }
-  .type-tutoriel { --task-color: #4f46e5; }
-  .type-exercice { --task-color: #059669; }
+  .type-video { --task-color: #dc2626; }
+  .type-image { --task-color: #7c3aed; }
+  .type-texte { --task-color: #ea580c; }
   .type-lien { --task-color: #0891b2; }
-  .type-info { --task-color: #ea580c; }
+  .type-fichier { --task-color: #059669; }
+  .task-video:empty { display: none; }
+  .video-open { margin: 10px 0 0; background: #dc2626; }
+  .task-video { margin-bottom: 14px; }
+  .task-video iframe, .task-video video { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 12px; background: #000; }
   .task-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 14px; }
   .task-link {
     display: block; text-align: center; text-decoration: none; background: var(--accent); color: white;
     padding: 13px; border-radius: 12px; font-weight: 600; margin-bottom: 14px;
   }
-  .task-image { margin-bottom: 14px; }
-  .task-image img { display: block; width: 100%; border-radius: 12px; background: #eef0f4; }
-  .task-image a { display: block; text-align: center; padding: 8px; color: var(--accent); font-size: 0.9rem; font-weight: 600; text-decoration: none; }
+  .task-image {
+    display: block; width: 100%; border-radius: 12px; background: #eef0f4; margin-bottom: 14px; cursor: zoom-in;
+    -webkit-touch-callout: none; user-select: none;
+  }
+  .image-viewer {
+    display: none; position: fixed; inset: 0; z-index: 60; background: #000; overflow: auto;
+    align-items: center; justify-content: center;
+  }
+  .image-viewer.open { display: flex; }
+  .image-viewer img {
+    display: block; max-width: 100%; max-height: 100%; margin: auto; cursor: zoom-in;
+    -webkit-touch-callout: none; user-select: none;
+  }
+  .image-viewer.zoomed { display: block; }
+  .image-viewer.zoomed img { max-width: none; max-height: none; width: 250%; cursor: zoom-out; }
+  .viewer-close {
+    position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 61; width: 44px; height: 44px;
+    border: none; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; font-size: 1.2rem; cursor: pointer;
+  }
   .task-file {
     display: block; border: 1px solid var(--border); border-radius: 12px; padding: 13px; margin-bottom: 10px;
     color: var(--text); text-decoration: none; font-weight: 600; overflow-wrap: anywhere;
@@ -265,7 +293,7 @@
     <div class="date-text" id="seanceDate"></div>
     <p class="seance-desc" id="seanceDesc"></p>
     <div class="card-grid" id="taskGrid"></div>
-    <div class="empty-state" id="seanceEmpty" style="display:none;">Aucune tâche pour le moment.</div>
+    <div class="empty-state" id="seanceEmpty" style="display:none;">Aucune carte pour le moment.</div>
   </div>
 </main>
 
@@ -298,11 +326,17 @@
     <div class="sheet-handle"></div>
     <h3 id="taskTitle"></h3>
     <span class="subject-tag" id="taskType"></span>
+    <div class="task-video" id="taskVideo"></div>
     <p class="task-text" id="taskText"></p>
     <a class="task-link" id="taskLink" target="_blank" rel="noopener">🔗 Ouvrir le lien</a>
     <div id="taskMedia"></div>
     <button class="sheet-close" id="taskClose">Fermer</button>
   </div>
+</div>
+
+<div class="image-viewer" id="imageViewer">
+  <button class="viewer-close" id="viewerClose" aria-label="Fermer">✕</button>
+  <img id="viewerImg" alt="" draggable="false">
 </div>
 
 <script>
@@ -565,10 +599,11 @@
 
   // ---- Club Robotique ----
   const TASK_TYPES = {
-    tutoriel: { label: 'Tutoriel', icon: '📘', cls: 'type-tutoriel' },
-    exercice: { label: 'Exercice', icon: '✏️', cls: 'type-exercice' },
+    video: { label: 'Vidéo', icon: '🎬', cls: 'type-video' },
+    image: { label: 'Image', icon: '🖼️', cls: 'type-image' },
+    texte: { label: 'Texte', icon: '📝', cls: 'type-texte' },
     lien: { label: 'Lien', icon: '🔗', cls: 'type-lien' },
-    info: { label: 'Information', icon: '💡', cls: 'type-info' }
+    fichier: { label: 'Fichier', icon: '📎', cls: 'type-fichier' }
   };
   const clubScreen = document.getElementById('clubScreen');
   const seanceScreen = document.getElementById('seanceScreen');
@@ -681,16 +716,34 @@
     grid.innerHTML = '';
     document.getElementById('seanceEmpty').style.display = tasks.length === 0 ? 'block' : 'none';
     tasks.forEach(t => {
-      const type = TASK_TYPES[t.type] || TASK_TYPES.info;
+      const type = TASK_TYPES[t.type] || TASK_TYPES.texte;
       const card = document.createElement('div');
       card.className = 'grid-card task-card ' + type.cls;
       card.innerHTML = `
-        <div class="task-icon"></div>
+        <div class="task-preview"><span></span></div>
         <div class="grid-body">
           <span class="task-type"></span>
           <h3></h3>
         </div>`;
-      card.querySelector('.task-icon').textContent = type.icon;
+      const preview = card.querySelector('.task-preview');
+      preview.querySelector('span').textContent = type.icon;
+      const previewSrc = taskPreview(t);
+      if (previewSrc) {
+        const img = document.createElement('img');
+        img.src = previewSrc;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.draggable = false;
+        img.onerror = () => img.remove();
+        preview.appendChild(img);
+      }
+      if (t.type === 'video') {
+        const play = document.createElement('div');
+        play.className = 'play-badge';
+        play.textContent = '▶';
+        preview.appendChild(play);
+      }
       card.querySelector('.task-type').textContent = type.label;
       card.querySelector('h3').textContent = t.title || 'Sans titre';
       card.addEventListener('click', () => openTask(t));
@@ -698,8 +751,21 @@
     });
   }
 
+  function miniPath(path) { return path.replace(/\.jpg$/, '-mini.jpg'); }
+
+  function taskPreview(t) {
+    if (t.youtubeId) return 'https://img.youtube.com/vi/' + encodeURIComponent(t.youtubeId) + '/mqdefault.jpg';
+    if (t.images && t.images.length) return miniPath(t.images[0]);
+    return null;
+  }
+
   function openTask(t) {
-    const type = TASK_TYPES[t.type] || TASK_TYPES.info;
+    // A lone image goes straight to the full-screen viewer
+    if (t.images && t.images.length === 1 && !t.text && !t.link && !t.youtubeId && !t.video) {
+      openViewer(t.images[0]);
+      return;
+    }
+    const type = TASK_TYPES[t.type] || TASK_TYPES.texte;
     document.getElementById('taskTitle').textContent = t.title || 'Sans titre';
     document.getElementById('taskType').textContent = type.icon + ' ' + type.label;
     const text = document.getElementById('taskText');
@@ -711,23 +777,47 @@
     link.style.display = safeLink ? 'block' : 'none';
     if (safeLink) link.href = t.link; else link.removeAttribute('href');
 
+    const video = document.getElementById('taskVideo');
+    video.innerHTML = '';
+    if (t.youtubeId) {
+      const frame = document.createElement('iframe');
+      frame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(t.youtubeId) + '?rel=0&playsinline=1';
+      frame.title = t.title || 'Vidéo';
+      frame.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+      frame.allowFullscreen = true;
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      video.appendChild(frame);
+      const open = document.createElement('a');
+      open.className = 'task-link video-open';
+      open.href = 'https://youtu.be/' + encodeURIComponent(t.youtubeId);
+      open.target = '_blank';
+      open.rel = 'noopener';
+      open.textContent = '▶ Ouvrir sur YouTube';
+      video.appendChild(open);
+    } else if (t.video) {
+      const player = document.createElement('video');
+      player.src = t.video;
+      player.controls = true;
+      player.playsInline = true;
+      player.preload = 'metadata';
+      player.setAttribute('controlsList', 'nodownload');
+      player.oncontextmenu = () => false;
+      video.appendChild(player);
+    }
+
     const media = document.getElementById('taskMedia');
     media.innerHTML = '';
     (t.images || []).forEach((path, i) => {
-      const wrap = document.createElement('div');
-      wrap.className = 'task-image';
       const img = document.createElement('img');
+      img.className = 'task-image';
       img.src = path;
       img.alt = 'Image ' + (i + 1);
       img.loading = 'lazy';
       img.decoding = 'async';
-      const a = document.createElement('a');
-      a.href = path;
-      a.download = '';
-      a.textContent = '⬇ Télécharger l\'image';
-      wrap.appendChild(img);
-      wrap.appendChild(a);
-      media.appendChild(wrap);
+      img.draggable = false;
+      img.oncontextmenu = () => false;
+      img.addEventListener('click', () => openViewer(path));
+      media.appendChild(img);
     });
     (t.files || []).forEach(f => {
       const a = document.createElement('a');
@@ -740,6 +830,28 @@
     taskOverlay.classList.add('open');
   }
 
+  function closeTask() {
+    taskOverlay.classList.remove('open');
+    document.getElementById('taskVideo').innerHTML = '';
+  }
+
+  // ---- Full-screen image viewer ----
+  const viewer = document.getElementById('imageViewer');
+  const viewerImg = document.getElementById('viewerImg');
+
+  function openViewer(path) {
+    viewerImg.src = path;
+    viewer.classList.remove('zoomed');
+    viewer.classList.add('open');
+  }
+  function closeViewer() {
+    viewer.classList.remove('open');
+    viewerImg.removeAttribute('src');
+  }
+  viewerImg.addEventListener('click', () => viewer.classList.toggle('zoomed'));
+  viewerImg.addEventListener('contextmenu', e => e.preventDefault());
+  document.getElementById('viewerClose').addEventListener('click', closeViewer);
+
   document.getElementById('clubCard').addEventListener('click', openClub);
   document.getElementById('clubBack').addEventListener('click', () => {
     clubOpen = false;
@@ -751,8 +863,8 @@
     clubScreen.style.display = 'block';
     renderClub();
   });
-  document.getElementById('taskClose').addEventListener('click', () => taskOverlay.classList.remove('open'));
-  taskOverlay.addEventListener('click', (e) => { if (e.target === taskOverlay) taskOverlay.classList.remove('open'); });
+  document.getElementById('taskClose').addEventListener('click', closeTask);
+  taskOverlay.addEventListener('click', (e) => { if (e.target === taskOverlay) closeTask(); });
 
   document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });

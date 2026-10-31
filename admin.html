@@ -177,38 +177,52 @@
 
     <div class="box">
       <h2>Séances publiées</h2>
-      <p class="hint">Cliquez sur « Tâches » pour ajouter le contenu d'une séance.</p>
+      <p class="hint">Cliquez sur « Cartes » pour ajouter le contenu d'une séance.</p>
       <div id="seanceList"></div>
       <div class="status" id="seanceListStatus"></div>
     </div>
 
     <div class="box" id="taskBox" style="display:none;">
       <h2 id="taskBoxTitle">Tâches</h2>
-      <p class="hint">Chaque tâche apparaît comme une carte dans la séance.</p>
+      <p class="hint">Chaque élément apparaît comme une carte dans la séance.</p>
       <div id="taskList"></div>
-      <h2 id="taskFormTitle" style="margin-top:22px;">Nouvelle tâche</h2>
-      <label>Titre de la tâche</label>
-      <input type="text" id="taskName" placeholder="ex: Exercice 1 : Allumer une LED">
-      <label>Type</label>
+      <h2 id="taskFormTitle" style="margin-top:22px;">Ajouter du contenu</h2>
+      <label>Que voulez-vous ajouter ?</label>
       <select id="taskTypeInput">
-        <option value="tutoriel">📘 Tutoriel</option>
-        <option value="exercice">✏️ Exercice</option>
+        <option value="video">🎬 Vidéo</option>
+        <option value="image">🖼️ Image</option>
+        <option value="texte">📝 Texte</option>
         <option value="lien">🔗 Lien</option>
-        <option value="info">💡 Information</option>
+        <option value="fichier">📎 Fichier à télécharger</option>
       </select>
+      <label>Titre de la carte</label>
+      <input type="text" id="taskName" placeholder="ex: Exercice 1 : Allumer une LED">
+      <div id="fieldsVideo">
+        <label>Lien YouTube (recommandé)</label>
+        <input type="url" id="taskYoutube" placeholder="ex: https://youtu.be/...">
+        <p class="hint" style="margin:6px 0 0;">Sur YouTube, choisissez la visibilité « Non répertoriée ».</p>
+        <label>Ou fichier vidéo (20 Mo maximum)</label>
+        <input type="file" id="taskVideoFile" accept="video/*">
+      </div>
+      <div id="fieldsImage">
+        <label>Images (une ou plusieurs)</label>
+        <input type="file" id="taskImages" accept="image/*" multiple>
+      </div>
+      <div id="fieldsLink">
+        <label>Lien</label>
+        <input type="url" id="taskLinkInput" placeholder="ex: https://www.tinkercad.com">
+      </div>
+      <div id="fieldsFile">
+        <label>Fichiers (20 Mo maximum par fichier)</label>
+        <input type="file" id="taskFiles" multiple>
+      </div>
       <label>Texte (optionnel)</label>
       <textarea id="taskTextInput" placeholder="Les explications ou les consignes"></textarea>
-      <label>Lien (optionnel)</label>
-      <input type="url" id="taskLinkInput" placeholder="ex: https://www.tinkercad.com">
-      <label>Images (optionnel, plusieurs possibles)</label>
-      <input type="file" id="taskImages" accept="image/*" multiple>
-      <label>Fichiers (optionnel, 20 Mo maximum par fichier)</label>
-      <input type="file" id="taskFiles" multiple>
       <div id="taskAttachments"></div>
-      <button id="taskSubmit">Publier la tâche</button>
+      <button id="taskSubmit">Publier</button>
       <button class="secondary" id="taskCancel" style="display:none;">Annuler la modification</button>
       <div class="status" id="taskStatus"></div>
-      <button class="secondary" id="taskBoxClose">Fermer les tâches</button>
+      <button class="secondary" id="taskBoxClose">Fermer</button>
     </div>
   </div>
 </main>
@@ -671,7 +685,7 @@
 
   // ---- Club Robotique ----
   const MAX_FILE_MB = 20;
-  const TYPE_LABELS = { tutoriel: '📘 Tutoriel', exercice: '✏️ Exercice', lien: '🔗 Lien', info: '💡 Information' };
+  const TYPE_LABELS = { video: '🎬 Vidéo', image: '🖼️ Image', texte: '📝 Texte', lien: '🔗 Lien', fichier: '📎 Fichier' };
   let club = { seances: [] };
   let clubSha = null;
   let editingSeanceId = null;
@@ -729,7 +743,7 @@
   }
 
   function taskPaths(task) {
-    return [...(task.images || []), ...(task.files || []).map(f => f.path)];
+    return [...(task.images || []).flatMap(p => [p, miniPath(p)]), ...(task.files || []).map(f => f.path), task.video];
   }
 
   function findSeance(id) { return club.seances.find(s => s.id === id); }
@@ -829,11 +843,11 @@
         row.innerHTML = `
           <span class="info"><span class="subject"></span><div class="title"></div></span>
           <span class="actions">
-            <button class="icon-btn edit tasks">📋 Tâches</button>
+            <button class="icon-btn edit tasks">📋 Cartes</button>
             <button class="icon-btn edit rename">✏️</button>
             <button class="icon-btn delete">🗑️</button>
           </span>`;
-        row.querySelector('.subject').textContent = `${s.date || ''} • ${(s.tasks || []).length} tâche(s)`;
+        row.querySelector('.subject').textContent = `${s.date || ''} • ${(s.tasks || []).length} carte(s)`;
         row.querySelector('.title').textContent = s.title;
         row.querySelector('.tasks').addEventListener('click', () => openTasks(s.id));
         row.querySelector('.rename').addEventListener('click', () => startEditSeance(s));
@@ -864,6 +878,13 @@
   }
 
   // ---- Tâches ----
+  function miniPath(path) { return path.replace(/\.jpg$/, '-mini.jpg'); }
+
+  function youtubeId(url) {
+    const m = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/);
+    return m ? m[1] : null;
+  }
+
   function openTasks(id) {
     openSeanceId = id;
     resetTaskForm();
@@ -877,32 +898,47 @@
     $('taskBox').style.display = 'none';
   }
 
+  function toggleTaskFields() {
+    const kind = $('taskTypeInput').value;
+    $('fieldsVideo').style.display = kind === 'video' ? 'block' : 'none';
+    $('fieldsImage').style.display = kind === 'image' ? 'block' : 'none';
+    $('fieldsLink').style.display = kind === 'lien' ? 'block' : 'none';
+    $('fieldsFile').style.display = kind === 'fichier' ? 'block' : 'none';
+  }
+  $('taskTypeInput').addEventListener('change', toggleTaskFields);
+
   function resetTaskForm() {
     editingTaskId = null;
     removedAttachments = [];
-    $('taskFormTitle').textContent = 'Nouvelle tâche';
-    $('taskSubmit').textContent = 'Publier la tâche';
+    $('taskFormTitle').textContent = 'Ajouter du contenu';
+    $('taskSubmit').textContent = 'Publier';
     $('taskCancel').style.display = 'none';
     $('taskName').value = '';
-    $('taskTypeInput').value = 'tutoriel';
+    $('taskTypeInput').value = 'video';
     $('taskTextInput').value = '';
     $('taskLinkInput').value = '';
+    $('taskYoutube').value = '';
+    $('taskVideoFile').value = '';
     $('taskImages').value = '';
     $('taskFiles').value = '';
     $('taskAttachments').innerHTML = '';
+    toggleTaskFields();
   }
 
   function startEditTask(t) {
     resetTaskForm();
     editingTaskId = t.id;
-    $('taskFormTitle').textContent = 'Modifier la tâche';
+    $('taskFormTitle').textContent = 'Modifier le contenu';
     $('taskSubmit').textContent = 'Enregistrer les modifications';
     $('taskCancel').style.display = 'block';
     $('taskName').value = t.title || '';
-    $('taskTypeInput').value = t.type || 'info';
+    $('taskTypeInput').value = TYPE_LABELS[t.type] ? t.type : 'texte';
     $('taskTextInput').value = t.text || '';
     $('taskLinkInput').value = t.link || '';
+    $('taskYoutube').value = t.youtubeId ? 'https://youtu.be/' + t.youtubeId : '';
+    toggleTaskFields();
     const list = [...(t.images || []).map(p => ({ path: p, name: p.split('/').pop() })), ...(t.files || [])];
+    if (t.video) list.push({ path: t.video, name: t.video.split('/').pop() });
     list.forEach(item => {
       const row = document.createElement('div');
       row.className = 'attachment-row';
@@ -924,12 +960,18 @@
     const conf = getConf();
     if (!hasConf(conf, 'taskStatus')) return;
     const title = $('taskName').value.trim();
-    if (!title) { setStatus('taskStatus', 'err', 'Veuillez écrire le titre de la tâche.'); return; }
-    let link = $('taskLinkInput').value.trim();
+    if (!title) { setStatus('taskStatus', 'err', 'Veuillez écrire le titre de la carte.'); return; }
+    const kind = $('taskTypeInput').value;
+    const youtubeUrl = kind === 'video' ? $('taskYoutube').value.trim() : '';
+    const ytId = youtubeUrl ? youtubeId(youtubeUrl) : null;
+    if (youtubeUrl && !ytId) { setStatus('taskStatus', 'err', 'Ce lien YouTube n\'est pas reconnu.'); return; }
+    const videoFile = kind === 'video' ? $('taskVideoFile').files[0] : null;
+    let link = kind === 'lien' ? $('taskLinkInput').value.trim() : '';
     if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
-    const images = Array.from($('taskImages').files);
-    const files = Array.from($('taskFiles').files);
-    const tooBig = files.find(f => f.size > MAX_FILE_MB * 1024 * 1024);
+    if (kind === 'lien' && !link) { setStatus('taskStatus', 'err', 'Veuillez écrire le lien.'); return; }
+    const images = kind === 'image' ? Array.from($('taskImages').files) : [];
+    const files = kind === 'fichier' ? Array.from($('taskFiles').files) : [];
+    const tooBig = [...files, ...(videoFile ? [videoFile] : [])].find(f => f.size > MAX_FILE_MB * 1024 * 1024);
     if (tooBig) {
       setStatus('taskStatus', 'err', `"${tooBig.name}" dépasse ${MAX_FILE_MB} Mo. Pour une vidéo, utilisez plutôt un lien YouTube.`);
       return;
@@ -943,23 +985,36 @@
       if (!seance) throw new Error('Séance introuvable.');
       if (!Array.isArray(seance.tasks)) seance.tasks = [];
       let task = editingTaskId ? seance.tasks.find(t => t.id === editingTaskId) : null;
-      if (editingTaskId && !task) throw new Error('Tâche introuvable.');
+      if (editingTaskId && !task) throw new Error('Carte introuvable.');
       const isNew = !task;
       if (isNew) {
-        task = { id: 't-' + Date.now().toString(36), title, type: 'info', text: '', link: '', images: [], files: [] };
+        task = { id: 't-' + Date.now().toString(36), title, type: kind, text: '', link: '', youtubeId: null, video: null, images: [], files: [] };
         seance.tasks.push(task);
       }
       task.title = title;
-      task.type = $('taskTypeInput').value;
+      task.type = kind;
       task.text = $('taskTextInput').value.trim();
       task.link = link;
+      task.youtubeId = ytId;
       task.images = (task.images || []).filter(p => !removedAttachments.includes(p));
       task.files = (task.files || []).filter(f => !removedAttachments.includes(f.path));
+      if (removedAttachments.includes(task.video)) task.video = null;
+
+      if (kind === 'video' && !ytId && !task.video && !videoFile) throw new Error('Ajoutez un lien YouTube ou un fichier vidéo.');
+      if (kind === 'image' && task.images.length + images.length === 0) throw new Error('Ajoutez au moins une image.');
+      if (kind === 'fichier' && task.files.length + files.length === 0) throw new Error('Ajoutez au moins un fichier.');
 
       const stamp = Date.now().toString(36);
+      if (videoFile) {
+        if (task.video) removedAttachments.push(task.video);
+        const path = `club/${seance.id}/${task.id}-video-${stamp}.${videoFile.name.split('.').pop()}`;
+        await putFile(conf, path, await fileToBase64(videoFile), `Ajout vidéo: ${title}`);
+        task.video = path;
+      }
       for (let i = 0; i < images.length; i++) {
         const path = `club/${seance.id}/${task.id}-image-${stamp}-${i + 1}.jpg`;
-        await putFile(conf, path, await resizeImage(images[i], 1400, 0.8), `Ajout image: ${title}`);
+        await putFile(conf, path, await resizeImage(images[i], 1800, 0.82), `Ajout image: ${title}`);
+        await putFile(conf, miniPath(path), await resizeImage(images[i], 480, 0.7), `Ajout miniature: ${title}`);
         task.images.push(path);
       }
       for (let i = 0; i < files.length; i++) {
@@ -969,8 +1024,8 @@
         task.files.push({ name: f.name, path });
       }
 
-      await saveClubFile(conf, `${isNew ? 'Ajout' : 'Modification'} tâche: ${title}`);
-      await removeFiles(conf, removedAttachments, title);
+      await saveClubFile(conf, `${isNew ? 'Ajout' : 'Modification'} carte: ${title}`);
+      await removeFiles(conf, removedAttachments.flatMap(p => [p, miniPath(p)]), title);
       setStatus('taskStatus', 'ok', `"${title}" enregistrée !`);
       resetTaskForm();
       renderSeances();
@@ -988,7 +1043,7 @@
     const container = $('taskList');
     container.innerHTML = '';
     const tasks = seance.tasks || [];
-    if (tasks.length === 0) container.innerHTML = '<div class="empty-hint">Aucune tâche pour le moment.</div>';
+    if (tasks.length === 0) container.innerHTML = '<div class="empty-hint">Aucune carte pour le moment.</div>';
     tasks.forEach((t, i) => {
       const row = document.createElement('div');
       row.className = 'course-row';
@@ -1000,7 +1055,7 @@
           <button class="icon-btn edit rename">✏️</button>
           <button class="icon-btn delete">🗑️</button>
         </span>`;
-      row.querySelector('.subject').textContent = TYPE_LABELS[t.type] || TYPE_LABELS.info;
+      row.querySelector('.subject').textContent = TYPE_LABELS[t.type] || TYPE_LABELS.texte;
       row.querySelector('.title').textContent = t.title;
       row.querySelector('.up').disabled = i === 0;
       row.querySelector('.down').disabled = i === tasks.length - 1;
