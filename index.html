@@ -121,6 +121,7 @@
     display: flex; align-items: center; gap: 14px; border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 12px;
   }
+  .download-row img { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: #eef0f4; flex-shrink: 0; }
   .download-row .label { flex: 1; font-weight: 600; font-size: 1rem; }
   .download-row a.btn {
     display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
@@ -204,11 +205,13 @@
     <div class="date-text" id="modalDate" style="margin-bottom:14px;"></div>
 
     <div class="download-row course">
+      <img id="modalCourseImg" alt="" decoding="async" onerror="this.style.visibility='hidden'">
       <span class="label">📘 Cours</span>
       <a class="btn" id="modalCourseLink" download>⬇</a>
     </div>
     <div id="coursePrintContainer"></div>
     <div class="download-row exercise">
+      <img id="modalExerciseImg" alt="" decoding="async" onerror="this.style.visibility='hidden'">
       <span class="label">✏️ Exercices</span>
       <a class="btn" id="modalExerciseLink" download>⬇</a>
     </div>
@@ -374,12 +377,17 @@
     list.appendChild(frag);
   }
 
+  function thumbPath(filePath) { return filePath.replace('images/', 'thumbs/') + '.jpg'; }
+
   function setDownloadRow(prefix, filePath) {
+    const img = document.getElementById('modal' + prefix + 'Img');
     const link = document.getElementById('modal' + prefix + 'Link');
     const row = link.closest('.download-row');
     const hasFile = typeof filePath === 'string' && filePath.trim() !== '';
 
     if (hasFile) {
+      img.style.visibility = 'visible';
+      img.src = thumbPath(filePath);
       link.href = filePath;
       link.classList.remove('disabled');
       link.textContent = '⬇';
@@ -387,6 +395,7 @@
       row.classList.remove('missing');
       row.style.display = 'flex';
     } else {
+      img.removeAttribute('src');
       link.removeAttribute('href');
       link.classList.remove('disabled');
       link.removeAttribute('aria-disabled');
@@ -409,6 +418,7 @@
       const row = document.createElement('div');
       row.className = 'download-row print';
       row.innerHTML = `
+        <img alt="" decoding="async" src="${thumbPath(filePath)}" onerror="this.style.visibility='hidden'">
         <span class="label">📎 Image ${idx + 1} à coller</span>
         <a class="btn" href="${filePath}" download>⬇</a>`;
       frag.appendChild(row);

@@ -203,10 +203,31 @@
     } catch (e) { return null; }
   }
 
+  function thumbPath(path) { return path.replace('images/', 'thumbs/') + '.jpg'; }
+
+  async function makeThumb(file) {
+    const bmp = await createImageBitmap(file);
+    const size = 104, side = Math.min(bmp.width, bmp.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.drawImage(bmp, (bmp.width - side) / 2, (bmp.height - side) / 2, side, side, 0, 0, size, size);
+    return canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+  }
+
   async function uploadImage(conf, path, file, message) {
     const b64 = await fileToBase64(file);
     const existing = await getFileIfExists(conf, path);
     await ghPut(conf, path, { message, content: b64, branch: conf.branch, sha: existing ? existing.sha : undefined });
+
+    // Best-effort: a failed thumbnail must not block publishing
+    try {
+      const thumb = thumbPath(path);
+      const thumbExisting = await getFileIfExists(conf, thumb);
+      await ghPut(conf, thumb, { message: 'Miniature: ' + message, content: await makeThumb(file), branch: conf.branch, sha: thumbExisting ? thumbExisting.sha : undefined });
+    } catch (e) { console.warn('Miniature non créée', e); }
   }
 
   async function loadDataFile(conf) {
@@ -446,6 +467,11 @@
       for (const p of printFiles) {
         const f = await getFileIfExists(conf, p);
         if (f) await ghDelete(conf, p, { message: `Suppression photocopie: ${course.title}`, sha: f.sha, branch: conf.branch });
+      }
+
+      for (const p of [course.courseFile, course.exerciseFile, ...printFiles].filter(Boolean)) {
+        const t = await getFileIfExists(conf, thumbPath(p));
+        if (t) await ghDelete(conf, thumbPath(p), { message: `Suppression miniature: ${course.title}`, sha: t.sha, branch: conf.branch });
       }
 
       if (editingContext && editingContext.id === course.id) resetForm();
