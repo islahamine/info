@@ -69,6 +69,16 @@
       ],
       "exercisePrintFiles": [],
       "date": "2026-10-10T12:54:17.544Z"
+    },
+    {
+      "id": "cours-3-la-topologie-des-reseaux-mvwdw51b",
+      "title": "Cours 3 : La topologie des réseaux",
+      "subject": "Unité 1 - Séquence 1 - Environnement matériel d’un système informatique",
+      "courseFile": "images/2APIC/cours-3-la-topologie-des-reseaux-mvwdw51b-cours.png",
+      "exerciseFile": "images/2APIC/cours-3-la-topologie-des-reseaux-mvwdw51b-exo.PNG",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [],
+      "date": "2026-10-31T12:35:21.033Z"
     }
   ],
   "3APIC": [
