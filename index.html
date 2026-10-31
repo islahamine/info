@@ -121,7 +121,6 @@
     display: flex; align-items: center; gap: 14px; border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 12px;
   }
-  .download-row img { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: #eef0f4; flex-shrink: 0; }
   .download-row .label { flex: 1; font-weight: 600; font-size: 1rem; }
   .download-row a.btn {
     display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
@@ -205,13 +204,11 @@
     <div class="date-text" id="modalDate" style="margin-bottom:14px;"></div>
 
     <div class="download-row course">
-      <img id="modalCourseImg" alt="Cours" loading="lazy" decoding="async">
       <span class="label">📘 Cours</span>
       <a class="btn" id="modalCourseLink" download>⬇</a>
     </div>
     <div id="coursePrintContainer"></div>
     <div class="download-row exercise">
-      <img id="modalExerciseImg" alt="Exercices" loading="lazy" decoding="async">
       <span class="label">✏️ Exercices</span>
       <a class="btn" id="modalExerciseLink" download>⬇</a>
     </div>
@@ -225,6 +222,7 @@
   let allData = {};
   let currentLevel = null;
   let loadFailed = false;
+  let dataReady = false;
 
   const levelScreen = document.getElementById('levelScreen');
   const courseScreen = document.getElementById('courseScreen');
@@ -238,12 +236,6 @@
     "JEE / Spring": "☕", "Data Analysis": "📊"
   };
   function iconFor(subject) { return SUBJECT_ICONS[subject] || "📄"; }
-
-  const fallbackData = {
-    "1APIC": [{ id: "algo1", title: "Introduction aux algorithmes", subject: "Algorithmique", courseFile: "images/1APIC/algo1-cours.jpg", exerciseFile: "images/1APIC/algo1-exo.jpg", date: "2026-01-15" }],
-    "2APIC": [{ id: "docker1", title: "Introduction à Docker", subject: "DevOps", courseFile: "images/2APIC/docker1-cours.jpg", exerciseFile: "images/2APIC/docker1-exo.jpg", date: "2026-01-15" }],
-    "3APIC": [{ id: "spring1", title: "Spring Boot - les bases", subject: "JEE / Spring", courseFile: "images/3APIC/spring1-cours.jpg", exerciseFile: "images/3APIC/spring1-exo.jpg", date: "2026-01-15" }]
-  };
 
   function formatDate(iso) {
     if (!iso) return '';
@@ -267,7 +259,7 @@
   function updateLevelCounts() {
     ['1APIC', '2APIC', '3APIC'].forEach(lvl => {
       const el = document.getElementById('count-' + lvl);
-      if (el) el.textContent = ' • ' + (allData[lvl] || []).length + ' cours';
+      if (el) el.textContent = loadFailed ? '' : ' • ' + (allData[lvl] || []).length + ' cours';
     });
   }
 
@@ -318,11 +310,23 @@
   async function loadData() {
     try {
       const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       allData = await res.json();
+      loadFailed = false;
     } catch (e) {
-      allData = fallbackData;
+      allData = {};
       loadFailed = true;
     }
+    dataReady = true;
+  }
+
+  function refreshData() {
+    dataReady = false;
+    return loadData().then(() => {
+      updateLevelCounts();
+      updateBadge();
+      if (currentLevel) renderCourses();
+    });
   }
 
   function openLevel(level) {
@@ -330,10 +334,16 @@
     levelScreen.style.display = 'none';
     courseScreen.style.display = 'block';
     searchInput.value = '';
+    if (loadFailed) refreshData();
     renderCourses();
   }
 
   function renderCourses() {
+    if (!dataReady) {
+      emptyState.style.display = 'none';
+      showSkeleton();
+      return;
+    }
     const q = searchInput.value.trim().toLowerCase();
     const courses = (allData[currentLevel] || []).filter(c =>
       c.title.toLowerCase().includes(q) || c.subject.toLowerCase().includes(q)
@@ -365,14 +375,11 @@
   }
 
   function setDownloadRow(prefix, filePath) {
-    const img = document.getElementById('modal' + prefix + 'Img');
     const link = document.getElementById('modal' + prefix + 'Link');
     const row = link.closest('.download-row');
     const hasFile = typeof filePath === 'string' && filePath.trim() !== '';
 
     if (hasFile) {
-      img.src = filePath;
-      img.style.visibility = 'visible';
       link.href = filePath;
       link.classList.remove('disabled');
       link.textContent = '⬇';
@@ -380,8 +387,6 @@
       row.classList.remove('missing');
       row.style.display = 'flex';
     } else {
-      img.removeAttribute('src');
-      img.style.visibility = 'hidden';
       link.removeAttribute('href');
       link.classList.remove('disabled');
       link.removeAttribute('aria-disabled');
@@ -404,7 +409,6 @@
       const row = document.createElement('div');
       row.className = 'download-row print';
       row.innerHTML = `
-        <img alt="Image ${idx + 1} à coller" loading="lazy" decoding="async" src="${filePath}">
         <span class="label">📎 Image ${idx + 1} à coller</span>
         <a class="btn" href="${filePath}" download>⬇</a>`;
       frag.appendChild(row);
@@ -447,8 +451,7 @@
 
   searchInput.addEventListener('input', renderCourses);
 
-  showSkeleton();
-  loadData().then(() => { updateLevelCounts(); updateBadge(); });
+  refreshData();
 </script>
 
 </body>
