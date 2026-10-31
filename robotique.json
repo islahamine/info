@@ -1,3 +1,12 @@
 {
-  "seances": []
+  "seances": [
+    {
+      "id": "seance-1-ma-premiere-lumiere-mvwhq9xf",
+      "title": "Séance 1 : Ma première lumière",
+      "date": "2026-10-30",
+      "description": "je fabrique mon premier circuit électrique",
+      "cover": null,
+      "tasks": []
+    }
+  ]
 }
