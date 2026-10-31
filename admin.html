@@ -102,16 +102,15 @@
       <option value="2APIC">2APIC</option>
       <option value="3APIC">3APIC</option>
     </select>
-    <div class="row">
-      <div>
-        <label>Matière</label>
-        <input type="text" id="subject" placeholder="ex: DevOps">
-      </div>
-      <div>
-        <label>Titre du cours</label>
-        <input type="text" id="title" placeholder="ex: Introduction à Docker">
-      </div>
+    <label>Unité</label>
+    <select id="unit"></select>
+    <div id="newUnitFields" style="display:none;">
+      <label>Nom de la nouvelle unité</label>
+      <input type="text" id="newUnitTitle" placeholder="ex: Unité 3 : Le tableur">
     </div>
+    <label>Titre du cours</label>
+    <input type="text" id="title" placeholder="ex: Cours 2 : Réseau WAN">
+    <p class="hint" style="margin:6px 0 0;">Écrivez « Cours 1 : … », « Cours 2 : … » : le site range les cours selon ce numéro.</p>
     <label id="courseImgLabel">Image du cours (photo/scan)</label>
     <input type="file" id="courseImage" accept="image/*">
     <label>Photocopies à coller — cours (optionnel, plusieurs images possibles)</label>
@@ -131,6 +130,12 @@
     <button class="refresh-btn" id="refreshBtn">🔄 Charger / actualiser la liste</button>
     <div id="courseList"></div>
     <div class="status" id="listStatus"></div>
+  </div>
+
+  <div class="box">
+    <h2>4. Unités</h2>
+    <p class="hint">Corrigez le nom d'une unité : il change partout sur le site.</p>
+    <div id="unitList"></div>
   </div>
 </main>
 
@@ -243,6 +248,91 @@
     currentDataSha = result.content.sha;
   }
 
+  // ---- Units ----
+  function unitsFor(level) {
+    if (!currentData.units) currentData.units = {};
+    if (!currentData.units[level]) currentData.units[level] = [];
+    return currentData.units[level];
+  }
+
+  function unitTitle(level, course) {
+    const unit = unitsFor(level).find(u => u.id === course.unit);
+    return unit ? unit.title : (course.subject || 'Unité non spécifiée');
+  }
+
+  function populateUnits(selected) {
+    const select = $('unit');
+    select.innerHTML = '';
+    unitsFor($('level').value).forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.textContent = u.title;
+      select.appendChild(opt);
+    });
+    const opt = document.createElement('option');
+    opt.value = '__new';
+    opt.textContent = '➕ Nouvelle unité...';
+    select.appendChild(opt);
+    const lessonUnits = unitsFor($('level').value).filter(u => u.id !== 'corrections');
+    if (selected && [...select.options].some(o => o.value === selected)) select.value = selected;
+    else if (lessonUnits.length) select.value = lessonUnits[lessonUnits.length - 1].id;
+    toggleNewUnit();
+  }
+
+  function toggleNewUnit() {
+    $('newUnitFields').style.display = $('unit').value === '__new' ? 'block' : 'none';
+  }
+
+  function resolveUnit(level) {
+    const value = $('unit').value;
+    if (value !== '__new') return value;
+    const title = $('newUnitTitle').value.trim();
+    const units = unitsFor(level);
+    const same = units.find(u => u.title.toLowerCase() === title.toLowerCase());
+    if (same) return same.id;
+    const unit = { id: 'u-' + Date.now().toString(36), title };
+    units.push(unit);
+    return unit.id;
+  }
+
+  function renderUnitList() {
+    const container = $('unitList');
+    container.innerHTML = '';
+    ['1APIC', '2APIC', '3APIC'].forEach(level => {
+      unitsFor(level).forEach(unit => {
+        const row = document.createElement('div');
+        row.className = 'course-row';
+        row.innerHTML = `
+          <span class="level-tag">${level}</span>
+          <span class="info"><div class="title"></div></span>
+          <span class="actions"><button class="icon-btn edit">✏️</button></span>`;
+        row.querySelector('.title').textContent = unit.title;
+        row.querySelector('.edit').addEventListener('click', () => renameUnit(level, unit));
+        container.appendChild(row);
+      });
+    });
+  }
+
+  async function renameUnit(level, unit) {
+    const title = prompt('Nom de l\'unité :', unit.title);
+    if (title === null || !title.trim()) return;
+    const conf = getConf();
+    setStatus('listStatus', 'loading', 'Enregistrement...');
+    try {
+      await loadDataFile(conf);
+      const target = unitsFor(level).find(u => u.id === unit.id);
+      if (!target) throw new Error('Unité introuvable.');
+      target.title = title.trim();
+      await saveDataFile(conf, `Modification unité: ${target.title} (${level})`);
+      await renderCourseList();
+    } catch (e) {
+      setStatus('listStatus', 'err', 'Erreur : ' + e.message);
+    }
+  }
+
+  $('level').addEventListener('change', () => populateUnits());
+  $('unit').addEventListener('change', toggleNewUnit);
+
   // ---- Form: add / edit ----
   function resetForm() {
     editingContext = null;
@@ -253,7 +343,8 @@
     $('courseImgLabel').textContent = 'Image du cours (photo/scan)';
     $('exerciseImgLabel').textContent = 'Image des exercices (photo/scan)';
     $('level').value = '1APIC';
-    $('subject').value = '';
+    populateUnits();
+    $('newUnitTitle').value = '';
     $('title').value = '';
     $('courseImage').value = '';
     $('coursePrintImages').value = '';
@@ -270,7 +361,7 @@
     $('courseImgLabel').textContent = 'Nouvelle image du cours (laisser vide pour garder l\'actuelle)';
     $('exerciseImgLabel').textContent = 'Nouvelle image des exercices (laisser vide pour garder l\'actuelle)';
     $('level').value = level;
-    $('subject').value = course.subject || '';
+    populateUnits(course.unit);
     $('title').value = course.title || '';
     $('courseImage').value = '';
     $('coursePrintImages').value = '';
@@ -288,8 +379,15 @@
       return;
     }
     const level = $('level').value;
-    const subject = $('subject').value.trim();
     const title = $('title').value.trim();
+    if (!title) {
+      setStatus('status', 'err', 'Veuillez écrire le titre du cours.');
+      return;
+    }
+    if (!$('unit').value || ($('unit').value === '__new' && !$('newUnitTitle').value.trim())) {
+      setStatus('status', 'err', 'Veuillez choisir une unité ou écrire le nom de la nouvelle unité.');
+      return;
+    }
     const courseFile = $('courseImage').files[0];
     const coursePrintFiles = Array.from($('coursePrintImages').files);
     const exerciseFile = $('exerciseImage').files[0];
@@ -300,13 +398,15 @@
 
     try {
       await loadDataFile(conf); // always work from the freshest version
+      const unit = resolveUnit(level);
 
       if (editingContext) {
         const list = currentData[editingContext.level] || [];
         const entry = list.find(c => c.id === editingContext.id);
         if (!entry) throw new Error('Cours introuvable (a-t-il déjà été supprimé ailleurs ?).');
 
-        entry.subject = subject;
+        entry.unit = unit;
+        delete entry.subject;
         entry.title = title;
 
         if (courseFile) {
@@ -383,7 +483,7 @@
         }
 
         if (!currentData[level]) currentData[level] = [];
-        currentData[level].push({ id, title, subject, courseFile: courseFilePath, exerciseFile: exerciseFilePath, coursePrintFiles: coursePrintPaths, exercisePrintFiles: exercisePrintPaths, date: new Date().toISOString() });
+        currentData[level].push({ id, title, unit, courseFile: courseFilePath, exerciseFile: exerciseFilePath, coursePrintFiles: coursePrintPaths, exercisePrintFiles: exercisePrintPaths, date: new Date().toISOString() });
 
         await saveDataFile(conf, `Ajout cours: ${title} (${level})`);
         setStatus('status', 'ok', `"${title}" publié avec succès dans ${level} !`);
@@ -408,19 +508,21 @@
     setStatus('listStatus', 'loading', 'Chargement...');
     try {
       await loadDataFile(conf);
+      populateUnits($('unit').value);
+      renderUnitList();
       const container = $('courseList');
       container.innerHTML = '';
       let total = 0;
       ['1APIC', '2APIC', '3APIC'].forEach(level => {
         (currentData[level] || []).forEach(course => {
           total++;
-          const incomplete = !course.title || !course.subject || !course.courseFile || !course.exerciseFile;
+          const incomplete = !course.title || !course.unit || !course.courseFile || !course.exerciseFile;
           const row = document.createElement('div');
           row.className = 'course-row';
           row.innerHTML = `
             <span class="level-tag">${level}</span>
             <span class="info">
-              <span class="subject">${course.subject || 'Matière non spécifiée'}</span>
+              <span class="subject">${unitTitle(level, course)}</span>
               <div class="title">${course.title || 'Sans titre'}${incomplete ? '<span class="missing-tag">⚠ Incomplet</span>' : ''}</div>
             </span>
             <span class="actions">
@@ -484,6 +586,7 @@
 
   $('refreshBtn').addEventListener('click', renderCourseList);
 
+  populateUnits();
   if (cfg.owner && cfg.token) renderCourseList();
 </script>
 

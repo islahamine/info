@@ -2,42 +2,41 @@
   "1APIC": [
     {
       "id": "notion-d-information-mui5sfv4",
-      "title": "notion d'information",
-      "subject": "Unité 1 - Séquence 1 - Cours 1",
+      "title": "Cours 1 : Notion d’information",
       "courseFile": "images/1APIC/notion-d-information-mui5sfv4-cours.PNG",
       "exerciseFile": "images/1APIC/notion-d-information-mui5sfv4-exo.png",
       "coursePrintFiles": [],
       "exercisePrintFiles": [],
-      "date": "2026-09-26T09:00:00.197Z"
+      "date": "2026-09-26T09:00:00.197Z",
+      "unit": "u1"
     },
     {
       "id": "cours-2-notion-de-traitement-et-terme-informatique-mv2eejma",
-      "title": "cours 2 : Notion de traitement et terme informatique",
-      "subject": "Unité 1 - Séquence 1 : Système informatique",
+      "title": "Cours 2 : Notion de traitement et terme informatique",
       "courseFile": "images/1APIC/cours-2-notion-de-traitement-et-terme-informatique-mv2eejma-cours.PNG",
       "exerciseFile": "images/1APIC/cours-2-notion-de-traitement-et-terme-informatique-mv2eejma-exo.PNG",
       "coursePrintFiles": [],
       "exercisePrintFiles": [],
-      "date": "2026-10-10T12:56:37.434Z"
+      "date": "2026-10-10T12:56:37.434Z",
+      "unit": "u1"
     },
     {
       "id": "cours-3-les-constituants-de-l-ordinateur-et-la-connectivite-mvwdgu73",
-      "title": "Cours 3 : les constituants de l’ordinateur et la connectivité",
-      "subject": "Unité 1 - Séquence 1 : Système informatique",
+      "title": "Cours 3 : Les constituants de l’ordinateur et la connectivité",
       "courseFile": "images/1APIC/cours-3-les-constituants-de-l-ordinateur-et-la-connectivite-mvwdgu73-cours.png",
       "exerciseFile": "images/1APIC/cours-3-les-constituants-de-l-ordinateur-et-la-connectivite-mvwdgu73-exo.jpg",
       "coursePrintFiles": [
         "images/1APIC/cours-3-les-constituants-de-l-ordinateur-et-la-connectivite-mvwdgu73-cours-photocopie-1.jpg"
       ],
       "exercisePrintFiles": [],
-      "date": "2026-10-31T12:23:28.801Z"
+      "date": "2026-10-31T12:23:28.801Z",
+      "unit": "u1"
     }
   ],
   "2APIC": [
     {
       "id": "correction-muh9g4zt",
-      "title": "Correction",
-      "subject": "Correction de l'évaluation diagnostique",
+      "title": "Correction de l’évaluation diagnostique",
       "courseFile": null,
       "exerciseFile": "images/2APIC/correction-muh9g4zt-exo.jpg",
       "coursePrintFiles": [],
@@ -46,80 +45,80 @@
         "images/2APIC/correction-muh9g4zt-exo-photocopie-2.png",
         "images/2APIC/correction-muh9g4zt-exo-photocopie-3.png"
       ],
-      "date": "2026-09-25T17:54:44.926Z"
+      "date": "2026-09-25T17:54:44.926Z",
+      "unit": "corrections"
     },
     {
       "id": "cours-1-notion-de-reseau-informatique-mur6d8in",
-      "title": "Cours 1 : notion de réseau informatique",
-      "subject": "Unité 1 - Séquence 1 - Environnement matériel d’un système informatique",
+      "title": "Cours 1 : Notion de réseau informatique",
       "courseFile": "images/2APIC/cours-1-notion-de-reseau-informatique-mur6d8in-cours.png",
       "exerciseFile": "images/2APIC/cours-1-notion-de-reseau-informatique-mur6d8in-exo.png",
       "coursePrintFiles": [],
       "exercisePrintFiles": [],
-      "date": "2026-10-02T16:26:06.991Z"
+      "date": "2026-10-02T16:26:06.991Z",
+      "unit": "u1"
     },
     {
       "id": "cours-2-configuration-materielles-monoposte-mv2ebbeu",
-      "title": "cours 2 : Configuration matérielles monoposte",
-      "subject": "Unité 1 : Environnement matériel d’un système informatique",
+      "title": "Cours 2 : Configuration matérielle monoposte",
       "courseFile": "images/2APIC/cours-2-configuration-materielles-monoposte-mv2ebbeu-cours.jpg",
       "exerciseFile": "images/2APIC/cours-2-configuration-materielles-monoposte-mv2ebbeu-exo.png",
       "coursePrintFiles": [
         "images/2APIC/cours-2-configuration-materielles-monoposte-mv2ebbeu-cours-photocopie-1.png"
       ],
       "exercisePrintFiles": [],
-      "date": "2026-10-10T12:54:17.544Z"
+      "date": "2026-10-10T12:54:17.544Z",
+      "unit": "u1"
     },
     {
       "id": "cours-3-la-topologie-des-reseaux-mvwdw51b",
       "title": "Cours 3 : La topologie des réseaux",
-      "subject": "Unité 1 - Séquence 1 - Environnement matériel d’un système informatique",
       "courseFile": "images/2APIC/cours-3-la-topologie-des-reseaux-mvwdw51b-cours.png",
       "exerciseFile": "images/2APIC/cours-3-la-topologie-des-reseaux-mvwdw51b-exo.PNG",
       "coursePrintFiles": [],
       "exercisePrintFiles": [],
-      "date": "2026-10-31T12:35:21.033Z"
+      "date": "2026-10-31T12:35:21.033Z",
+      "unit": "u1"
     }
   ],
   "3APIC": [
     {
       "id": "correction-muhacf5n",
-      "title": "Correction",
-      "subject": "Correction de l'évaluation diagnostique",
+      "title": "Correction de l’évaluation diagnostique",
       "courseFile": null,
       "exerciseFile": "images/3APIC/correction-muhacf5n-exo.png",
       "coursePrintFiles": [],
       "exercisePrintFiles": [
         "images/3APIC/correction-muhacf5n-exo-photocopie-1.png"
       ],
-      "date": "2026-09-25T18:19:48.212Z"
+      "date": "2026-09-25T18:19:48.212Z",
+      "unit": "corrections"
     },
     {
       "id": "cours-1-le-reseau-lan-et-man-mur5ulca",
-      "title": "Cours 1 : le Réseau LAN et MAN",
-      "subject": "Unité 1 : Typologie Réseau",
+      "title": "Cours 1 : Le réseau LAN et MAN",
       "courseFile": "images/3APIC/cours-1-le-reseau-lan-et-man-mur5ulca-cours.jpg",
       "exerciseFile": "images/3APIC/cours-1-le-reseau-lan-et-man-mur5ulca-exo.png",
       "coursePrintFiles": [],
       "exercisePrintFiles": [
         "images/3APIC/cours-1-le-reseau-lan-et-man-mur5ulca-exo-photocopie-1.png"
       ],
-      "date": "2026-10-02T16:11:39.931Z"
+      "date": "2026-10-02T16:11:39.931Z",
+      "unit": "u1"
     },
     {
       "id": "cours-2-reseau-wan-mv2eqrw2",
       "title": "Cours 2 : Réseau WAN",
-      "subject": "Unité 1 : Typologie Réseau",
       "courseFile": "images/3APIC/cours-2-reseau-wan-mv2eqrw2-cours.PNG",
       "exerciseFile": "images/3APIC/cours-2-reseau-wan-mv2eqrw2-exo.png",
       "coursePrintFiles": [],
       "exercisePrintFiles": [],
-      "date": "2026-10-10T13:06:04.263Z"
+      "date": "2026-10-10T13:06:04.263Z",
+      "unit": "u1"
     },
     {
       "id": "cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2",
-      "title": "Cours 1 : l’environnement du logiciel PowerPoint",
-      "subject": "Unité 2 : La présentation assistée par ordinateur",
+      "title": "Cours 1 : L’environnement du logiciel PowerPoint",
       "courseFile": "images/3APIC/cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2-cours.png",
       "exerciseFile": "images/3APIC/cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2-exo.png",
       "coursePrintFiles": [
@@ -129,7 +128,44 @@
       "exercisePrintFiles": [
         "images/3APIC/cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2-exo-photocopie-1.png"
       ],
-      "date": "2026-10-31T12:55:25.504Z"
+      "date": "2026-10-31T12:55:25.504Z",
+      "unit": "u2"
     }
-  ]
+  ],
+  "units": {
+    "1APIC": [
+      {
+        "id": "corrections",
+        "title": "Corrections"
+      },
+      {
+        "id": "u1",
+        "title": "Unité 1 : Système informatique"
+      }
+    ],
+    "2APIC": [
+      {
+        "id": "corrections",
+        "title": "Corrections"
+      },
+      {
+        "id": "u1",
+        "title": "Unité 1 : Environnement matériel d’un système informatique"
+      }
+    ],
+    "3APIC": [
+      {
+        "id": "corrections",
+        "title": "Corrections"
+      },
+      {
+        "id": "u1",
+        "title": "Unité 1 : Typologie réseau"
+      },
+      {
+        "id": "u2",
+        "title": "Unité 2 : La présentation assistée par ordinateur"
+      }
+    ]
+  }
 }

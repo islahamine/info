@@ -79,6 +79,14 @@
     justify-content: center; font-size: 1.2rem; background: #eef0fb; flex-shrink: 0;
   }
   .course-item .txt { flex: 1; min-width: 0; }
+  .unit-group { margin-bottom: 22px; }
+  .unit-heading {
+    display: flex; align-items: flex-start; gap: 9px; margin: 0 0 10px;
+    padding: 10px 12px; border-radius: 12px; background: #eef0fb; color: var(--text);
+    border-left: 5px solid var(--accent);
+  }
+  .unit-heading .unit-icon { font-size: 1.25rem; line-height: 1.3; }
+  .unit-heading h2 { margin: 0; font-size: 1.08rem; line-height: 1.3; }
   .subject-tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); font-weight: 700; }
   .course-item h3 { margin: 2px 0 0; font-size: 1rem; line-height: 1.3; }
   .course-item .arrow { color: var(--muted); font-size: 1.3rem; flex-shrink: 0; }
@@ -151,9 +159,10 @@
       --shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
     .level-card:active, .course-item:active { background: #262842; }
-    .subj-icon { background: #262842; }
+    .subj-icon, .unit-heading { background: #262842; }
     .skeleton-block { background: #2a2c40; }
   }
+  :root[data-theme="dark"] .unit-heading { background: #262842; }
   :root[data-theme="dark"] {
     --bg: #14151f; --card-bg: #1e2030; --text: #e5e7eb; --muted: #9ca3af; --border: #2e3040;
   }
@@ -234,11 +243,17 @@
   const searchInput = document.getElementById('searchInput');
   const overlay = document.getElementById('overlay');
 
-  const SUBJECT_ICONS = {
-    "Algorithmique": "🧮", "DevOps": "⚙️", "Développement Web": "🌐",
-    "JEE / Spring": "☕", "Data Analysis": "📊"
-  };
-  function iconFor(subject) { return SUBJECT_ICONS[subject] || "📄"; }
+  function unitsFor(level) { return (allData.units && allData.units[level]) || []; }
+  function unitOf(level, c) {
+    return unitsFor(level).find(u => u.id === c.unit) || { id: 'autres', title: c.subject || 'Autres cours' };
+  }
+  function courseNumber(c) {
+    const m = (c.title || '').match(/cours\s*(\d+)/i);
+    return m ? Number(m[1]) : Infinity;
+  }
+  function byCourseNumber(a, b) {
+    return (courseNumber(a) - courseNumber(b)) || String(a.date || '').localeCompare(String(b.date || ''));
+  }
 
   function formatDate(iso) {
     if (!iso) return '';
@@ -349,7 +364,7 @@
     }
     const q = searchInput.value.trim().toLowerCase();
     const courses = (allData[currentLevel] || []).filter(c =>
-      c.title.toLowerCase().includes(q) || c.subject.toLowerCase().includes(q)
+      (c.title || '').toLowerCase().includes(q) || unitOf(currentLevel, c).title.toLowerCase().includes(q)
     );
     list.innerHTML = '';
     emptyState.style.display = courses.length === 0 ? 'block' : 'none';
@@ -359,20 +374,43 @@
 
     const frag = document.createDocumentFragment();
     const viewed = getViewedSet();
+    const groups = new Map();
+    unitsFor(currentLevel).forEach(u => groups.set(u.id, { unit: u, courses: [] }));
     courses.forEach(c => {
+      const unit = unitOf(currentLevel, c);
+      if (!groups.has(unit.id)) groups.set(unit.id, { unit, courses: [] });
+      groups.get(unit.id).courses.push(c);
+    });
+
+    groups.forEach(({ unit, courses: unitCourses }) => {
+      if (unitCourses.length === 0) return;
+      const group = document.createElement('section');
+      group.className = 'unit-group';
+      const heading = document.createElement('div');
+      heading.className = 'unit-heading';
+      heading.innerHTML = `
+        <span class="unit-icon">${unit.id === 'corrections' ? '📝' : '📂'}</span>
+        <h2></h2>`;
+      heading.querySelector('h2').textContent = unit.title;
+      group.appendChild(heading);
+      const groupList = document.createElement('div');
+      groupList.className = 'list';
+      unitCourses.sort(byCourseNumber).forEach(c => {
       const isNew = !viewed.has(c.id);
       const item = document.createElement('div');
       item.className = 'course-item';
       item.innerHTML = `
-        <span class="subj-icon">${iconFor(c.subject)}</span>
+        <span class="subj-icon">📄</span>
         <span class="txt">
-          <span class="subject-tag">${c.subject || 'Matière non spécifiée'}</span>
           <h3>${c.title || 'Sans titre'}${isNew ? '<span class="new-badge">NOUVEAU</span>' : ''}</h3>
           ${c.date ? `<div class="date-text">${formatDate(c.date)}</div>` : ''}
         </span>
         <span class="arrow">›</span>`;
       item.addEventListener('click', () => openSheet(c));
-      frag.appendChild(item);
+      groupList.appendChild(item);
+      });
+      group.appendChild(groupList);
+      frag.appendChild(group);
     });
     list.appendChild(frag);
   }
@@ -434,7 +472,7 @@
 
   function openSheet(c) {
     document.getElementById('modalTitle').textContent = c.title || 'Sans titre';
-    document.getElementById('modalSubject').textContent = c.subject || 'Matière non spécifiée';
+    document.getElementById('modalSubject').textContent = unitOf(currentLevel, c).title;
     document.getElementById('modalDate').textContent = c.date ? ('Ajouté le ' + formatDate(c.date)) : '';
     setDownloadRow('Course', c.courseFile);
     setDownloadRow('Exercise', c.exerciseFile);
