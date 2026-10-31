@@ -115,6 +115,21 @@
       "coursePrintFiles": [],
       "exercisePrintFiles": [],
       "date": "2026-10-10T13:06:04.263Z"
+    },
+    {
+      "id": "cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2",
+      "title": "Cours 1 : l’environnement du logiciel PowerPoint",
+      "subject": "Unité 2 : La présentation assistée par ordinateur",
+      "courseFile": "images/3APIC/cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2-cours.png",
+      "exerciseFile": "images/3APIC/cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2-exo.png",
+      "coursePrintFiles": [
+        "images/3APIC/cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2-cours-photocopie-1.jpg",
+        "images/3APIC/cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2-cours-photocopie-2.jpg"
+      ],
+      "exercisePrintFiles": [
+        "images/3APIC/cours-1-l-environnement-du-logiciel-powerpoint-mvwelqi2-exo-photocopie-1.png"
+      ],
+      "date": "2026-10-31T12:55:25.504Z"
     }
   ]
 }
