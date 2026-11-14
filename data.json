@@ -31,6 +31,18 @@
       "exercisePrintFiles": [],
       "date": "2026-10-31T12:23:28.801Z",
       "unit": "u1"
+    },
+    {
+      "id": "correction-du-controle-1-semestre-1-mwglyjxx",
+      "title": "Correction du contrôle 1 - Semestre 1",
+      "unit": "u-mwglyjxx",
+      "courseFile": null,
+      "exerciseFile": "images/1APIC/correction-du-controle-1-semestre-1-mwglyjxx-exo.png",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [
+        "images/1APIC/correction-du-controle-1-semestre-1-mwglyjxx-exo-photocopie-1.jpg"
+      ],
+      "date": "2026-11-14T16:16:53.960Z"
     }
   ],
   "2APIC": [
@@ -153,6 +165,10 @@
       {
         "id": "u1",
         "title": "Unité 1 : Système informatique"
+      },
+      {
+        "id": "u-mwglyjxx",
+        "title": "Contrôle 1 - Semstre 1"
       }
     ],
     "2APIC": [
