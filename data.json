@@ -130,6 +130,18 @@
       ],
       "date": "2026-10-31T12:55:25.504Z",
       "unit": "u2"
+    },
+    {
+      "id": "correction-du-controle-1-semestre-1-mwglo69m",
+      "title": "Correction du contrôle 1 - Semestre 1",
+      "unit": "u-mwglo69m",
+      "courseFile": null,
+      "exerciseFile": "images/3APIC/correction-du-controle-1-semestre-1-mwglo69m-exo.png",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [
+        "images/3APIC/correction-du-controle-1-semestre-1-mwglo69m-exo-photocopie-1.jpg"
+      ],
+      "date": "2026-11-14T16:08:38.211Z"
     }
   ],
   "units": {
@@ -165,6 +177,10 @@
       {
         "id": "u2",
         "title": "Unité 2 : La présentation assistée par ordinateur"
+      },
+      {
+        "id": "u-mwglo69m",
+        "title": "Contrôle 1 - Semestre 1"
       }
     ]
   }
