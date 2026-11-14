@@ -91,6 +91,16 @@
       "exercisePrintFiles": [],
       "date": "2026-10-31T12:35:21.033Z",
       "unit": "u1"
+    },
+    {
+      "id": "correction-du-controle-1-semestre-1-mwgm3035",
+      "title": "Correction du contrôle 1 - Semestre 1",
+      "unit": "u-mwgm3035",
+      "courseFile": null,
+      "exerciseFile": "images/2APIC/correction-du-controle-1-semestre-1-mwgm3035-exo.png",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [],
+      "date": "2026-11-14T16:20:09.097Z"
     }
   ],
   "3APIC": [
@@ -179,6 +189,10 @@
       {
         "id": "u1",
         "title": "Unité 1 : Environnement matériel d’un système informatique"
+      },
+      {
+        "id": "u-mwgm3035",
+        "title": "Contrôle 1 - Semstre 1"
       }
     ],
     "3APIC": [
