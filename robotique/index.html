@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Robotique : mes exercices · Club de robotique</title>
+<title>Robotique : mes exercices · Club de robotique</title>
 <link rel="stylesheet" href="assets/robotique.css">
+<style>
+  .simple-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .simple-steps li { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; font-size: 18px; }
+  .simple-steps .n { width: 36px; height: 36px; border-radius: 50%; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex: none; background: var(--teal); }
+  .simple-steps li.go { background: var(--green); border-color: var(--green); color: #fff; font-weight: 700; }
+  .simple-steps li.go .n { background: #fff; color: var(--green); }
+  .warn { margin-top: 12px; background: #FDECEE; color: #9B1C26; border-radius: 14px; padding: 12px 14px; font-weight: 700; }
+</style>
 </head>
 <body>
 <style>
@@ -29,15 +37,17 @@
 </div>
 <header class="rb-head"><div class="wrap">
   
-  <div class="rb-kicker">Club de robotique</div>
-  <h1>Robotique : mes exercices</h1>
-  <p>Je m'entraîne à la maison sur Tinkercad.</p>
-  
+  <h1>Robotique : mes exercices</h1>
+  <p>Je refais le circuit sur Tinkercad.</p>
 </div></header>
 <main class="wrap">
-<section class="rb-sec"><h2><span class="rb-num" style="background:var(--navy)">?</span>Comment ça marche ?</h2><div class="how"><div><span class="rb-num" style="background:var(--orange)">1</span><span>J'ouvre Tinkercad et je rejoins la classe.</span></div><div><span class="rb-num" style="background:var(--teal)">2</span><span>Je choisis un exercice et je suis les étapes.</span></div><div><span class="rb-num" style="background:var(--green)">3</span><span>Je coche les cases « Je vérifie ».</span></div></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--orange)">★</span>Les exercices</h2><div class="ex"><a href="niveau-1.html"><img src="img/modele-niveau1-derivation.png" alt="" loading="lazy"><div><span class="lvl" style="background:var(--teal)">★ Niveau 1</span><h3>2 LED : série et dérivation</h3><p>Je compare les 2 montages.</p></div></a><a href="niveau-2.html"><img src="img/modele-niveau2.png" alt="" loading="lazy"><div><span class="lvl" style="background:var(--orange)">★★ Niveau 2</span><h3>3 LED en dérivation</h3><p>Chaque LED a son chemin.</p></div></a><a href="niveau-3.html"><img src="img/modele-niveau3.png" alt="" loading="lazy"><div><span class="lvl" style="background:var(--red)">★★★ Niveau 3</span><h3>3 LED, 3 boutons</h3><p>Chaque bouton allume sa LED.</p></div></a><a href="aide-court-circuit.html"><img src="img/probleme-apres.png" alt="" loading="lazy"><div><span class="lvl" style="background:var(--navy)">Aide</span><h3>Pourquoi toutes les LED s'éteignent ?</h3><p>Je corrige le court-circuit.</p></div></a></div></section><div class="actions"><a class="btn orange" href="https://www.tinkercad.com/joinclass" target="_blank" rel="noopener">Ouvrir Tinkercad ↗</a></div>
-<details class="lex"><summary>📖 Lexique français → عربية</summary><table><tr><td>La pile</td><td class="ar" lang="ar">العمود الكهربائي</td></tr><tr><td>Le + / le − de la pile</td><td class="ar" lang="ar">القطب الموجب / القطب السالب</td></tr><tr><td>La LED</td><td class="ar" lang="ar">الصمام الثنائي الباعث للضوء</td></tr><tr><td>La patte longue / courte</td><td class="ar" lang="ar">الرجل الطويلة / القصيرة</td></tr><tr><td>La résistance</td><td class="ar" lang="ar">المقاومة (الموصل الأومي)</td></tr><tr><td>Le bouton-poussoir</td><td class="ar" lang="ar">الزر الضاغط</td></tr><tr><td>Le fil</td><td class="ar" lang="ar">السلك الموصل</td></tr><tr><td>Circuit fermé / ouvert</td><td class="ar" lang="ar">دارة مغلقة / مفتوحة</td></tr><tr><td>En série</td><td class="ar" lang="ar">على التوالي</td></tr><tr><td>En dérivation</td><td class="ar" lang="ar">على التوازي</td></tr><tr><td>Le court-circuit</td><td class="ar" lang="ar">الدارة القصيرة</td></tr></table></details>
-<nav class="pager"><span style="flex:1"></span><span style="flex:1"></span></nav>
+<section class="rb-sec"><div class="ex">
+<a href="niveau-1.html"><img src="img/modele-niveau1-derivation.png" alt=""><div><span class="lvl" style="background:var(--teal)">★ Niveau 1</span><h3>2 LED : série et dérivation</h3></div></a>
+<a href="niveau-2.html"><img src="img/modele-niveau2.png" alt=""><div><span class="lvl" style="background:var(--orange)">★★ Niveau 2</span><h3>3 LED en dérivation</h3></div></a>
+<a href="niveau-3.html"><img src="img/modele-niveau3.png" alt=""><div><span class="lvl" style="background:var(--red)">★★★ Niveau 3</span><h3>3 LED, 3 boutons</h3></div></a>
+</div></section>
+<div class="actions"><a class="btn orange" href="https://www.tinkercad.com/joinclass" target="_blank" rel="noopener">Ouvrir Tinkercad ↗</a></div>
+<nav class="pager"><span style="flex:1"></span></nav>
 </main>
 <script src="assets/robotique.js"></script>
 </body>

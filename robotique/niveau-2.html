@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>3 LED en dérivation · Club de robotique</title>
 <link rel="stylesheet" href="assets/robotique.css">
+<style>
+  .simple-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .simple-steps li { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; font-size: 18px; }
+  .simple-steps .n { width: 36px; height: 36px; border-radius: 50%; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex: none; background: var(--teal); }
+  .simple-steps li.go { background: var(--green); border-color: var(--green); color: #fff; font-weight: 700; }
+  .simple-steps li.go .n { background: #fff; color: var(--green); }
+  .warn { margin-top: 12px; background: #FDECEE; color: #9B1C26; border-radius: 14px; padding: 12px 14px; font-weight: 700; }
+</style>
 </head>
 <body>
 <style>
@@ -29,15 +37,17 @@
 </div>
 <header class="rb-head"><div class="wrap">
   <a class="rb-back" href="index.html">◀ Robotique</a>
-  <div class="rb-kicker">Devoir à la maison</div>
   <h1>3 LED en dérivation</h1>
-  <p>Je refais ce circuit sur Tinkercad, chez moi.</p>
   <span class="rb-stars">★★ Niveau 2</span>
 </div></header>
 <main class="wrap">
-<section class="rb-sec"><h2><span class="rb-num" style="background:var(--orange)">1</span>Le modèle</h2><div class="card"><div class="model"><img src="img/modele-niveau2.png" alt="3 LED en dérivation sur Tinkercad" loading="lazy"><span class="tag" style="left:15%;top:72%;background:var(--navy)">Pile 9 V</span><span class="tag" style="left:55.1%;top:63%;background:#B8894F">▲ Résistance</span><span class="tag" style="left:65%;top:28%;background:var(--red)">LED ▼</span><span class="tag" style="left:42.4%;top:38%;background:var(--red)">+</span><span class="tag" style="left:41.6%;top:58%;background:#1F2933">−</span></div><div class="zoom-hint">👆 Touche l'image pour l'agrandir</div><div class="tip"><b>Astuce :</b> une couleur de fil par chemin. C'est plus facile à suivre !</div></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--teal)">2</span>Le matériel</h2><div class="mats"><div class="mat"><div class="q">1</div><div class="t">pile de 9 V</div></div><div class="mat"><div class="q">3</div><div class="t">résistances</div></div><div class="mat"><div class="q">3</div><div class="t">LED (rouge, verte, jaune)</div></div><div class="mat"><div class="q">+</div><div class="t">des fils</div></div></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--navy)">3</span>Les étapes</h2><div data-stepper><ol class="steps" style="--c:var(--teal)"><li><span class="n">1</span><span>Je pose tous les composants comme sur le modèle.</span></li><li><span class="n">2</span><span>Je choisis une couleur de fil pour chaque chemin.</span></li><li><span class="n">3</span><span>Je relie le + de la pile à une patte de chaque résistance.</span></li><li><span class="n">4</span><span>Je relie l'autre patte de la résistance à la patte longue de sa LED.</span></li><li><span class="n">5</span><span>Je relie la patte courte de chaque LED au − de la pile.</span></li><li class="ok"><span class="n">6</span><span>Je touche « Démarrer la simulation ».</span></li></ol></div></section><section class="rb-sec"><div class="rule"><span class="i">!</span><div><b>En dérivation :</b> chaque LED a son propre chemin. Le + de la pile → la résistance → la LED → le − de la pile.</div></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--green)">✓</span>Je vérifie</h2><div><ul class="check" data-check="niveau2"><li><label><input type="checkbox"><span>Les 3 LED s'allument en même temps.</span></label></li><li><label><input type="checkbox"><span>Chaque LED a sa propre résistance.</span></label></li><li><label><input type="checkbox"><span>Je supprime le fil d'une LED : les 2 autres restent allumées.</span></label></li></ul><div class="bravo">🎉 Bravo ! Ton circuit marche.</div></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--orange)">+</span>Bonus</h2><div class="card">Je refais les 3 LED <b>en série</b>, avec une seule résistance. Que se passe-t-il ?</div></section><div class="actions"><a class="btn orange" href="https://www.tinkercad.com/joinclass" target="_blank" rel="noopener">Ouvrir Tinkercad ↗</a><a class="btn ghost" href="img/fiche-niveau2.png" download>⬇ Télécharger la fiche</a></div>
-<details class="lex"><summary>📖 Lexique français → عربية</summary><table><tr><td>La pile</td><td class="ar" lang="ar">العمود الكهربائي</td></tr><tr><td>Le + / le − de la pile</td><td class="ar" lang="ar">القطب الموجب / القطب السالب</td></tr><tr><td>La LED</td><td class="ar" lang="ar">الصمام الثنائي الباعث للضوء</td></tr><tr><td>La patte longue / courte</td><td class="ar" lang="ar">الرجل الطويلة / القصيرة</td></tr><tr><td>La résistance</td><td class="ar" lang="ar">المقاومة (الموصل الأومي)</td></tr><tr><td>Le bouton-poussoir</td><td class="ar" lang="ar">الزر الضاغط</td></tr><tr><td>Le fil</td><td class="ar" lang="ar">السلك الموصل</td></tr><tr><td>Circuit fermé / ouvert</td><td class="ar" lang="ar">دارة مغلقة / مفتوحة</td></tr><tr><td>En série</td><td class="ar" lang="ar">على التوالي</td></tr><tr><td>En dérivation</td><td class="ar" lang="ar">على التوازي</td></tr><tr><td>Le court-circuit</td><td class="ar" lang="ar">الدارة القصيرة</td></tr></table></details>
-<nav class="pager"><a href="niveau-1.html"><small>◀ Précédent</small>Niveau 1</a><a class="next" href="niveau-3.html"><small>Suivant ▶</small>Niveau 3</a></nav>
+<section class="rb-sec">
+<div class="card"><div class="model"><img src="img/modele-niveau2.png" alt="3 LED en dérivation sur Tinkercad"><span class="tag" style="left:15%;top:72%;background:var(--navy)">Pile 9 V</span><span class="tag" style="left:55.1%;top:63%;background:#B8894F">▲ Résistance</span><span class="tag" style="left:65%;top:28%;background:var(--red)">LED ▼</span><span class="tag" style="left:42.4%;top:38%;background:var(--red)">+</span><span class="tag" style="left:41.6%;top:58%;background:#1F2933">−</span></div><div class="zoom-hint">👆 Touche l'image pour l'agrandir</div></div>
+<div style="height:12px"></div>
+<ol class="simple-steps"><li><span class="n">1</span><span>Je pose les composants comme sur le modèle.</span></li><li><span class="n">2</span><span>Le + de la pile → chaque résistance.</span></li><li><span class="n">3</span><span>Chaque résistance → la patte longue de sa LED.</span></li><li><span class="n">4</span><span>La patte courte de chaque LED → le − de la pile.</span></li><li class="go"><span class="n">▶</span><span>Je démarre la simulation.</span></li></ol>
+</section>
+<div class="actions"><a class="btn orange" href="https://www.tinkercad.com/joinclass" target="_blank" rel="noopener">Ouvrir Tinkercad ↗</a></div>
+<nav class="pager"><span style="flex:1"></span><a class="next" href="niveau-3.html"><small>Suivant ▶</small>Niveau 3</a></nav>
 </main>
 <script src="assets/robotique.js"></script>
 </body>
