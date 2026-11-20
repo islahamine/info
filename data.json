@@ -43,6 +43,16 @@
         "images/1APIC/correction-du-controle-1-semestre-1-mwglyjxx-exo-photocopie-1.jpg"
       ],
       "date": "2026-11-14T16:16:53.960Z"
+    },
+    {
+      "id": "cours-4-le-systeme-informatique-mwpka4r3",
+      "title": "Cours 4 : le système informatique",
+      "unit": "u1",
+      "courseFile": "images/1APIC/cours-4-le-systeme-informatique-mwpka4r3-cours.PNG",
+      "exerciseFile": "images/1APIC/cours-4-le-systeme-informatique-mwpka4r3-exo.PNG",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [],
+      "date": "2026-11-20T22:39:43.151Z"
     }
   ],
   "2APIC": [
