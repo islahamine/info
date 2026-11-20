@@ -771,6 +771,10 @@
       window.location.href = t.page;
       return;
     }
+    if (t.type === 'lien' && /^https?:/i.test(t.link || '') && !t.text && !(t.images || []).length && !(t.files || []).length) {
+      window.open(t.link, '_blank', 'noopener');
+      return;
+    }
     // A lone image goes straight to the full-screen viewer
     if (t.images && t.images.length === 1 && !t.text && !t.link && !t.youtubeId && !t.video) {
       openViewer(t.images[0]);

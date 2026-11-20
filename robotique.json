@@ -8,6 +8,17 @@
       "cover": null,
       "tasks": [
         {
+          "id": "t-ouvrir-tinkercad",
+          "title": "Cliquez ici pour ouvrir Tinkercad",
+          "type": "lien",
+          "text": "",
+          "link": "https://www.tinkercad.com/joinclass/4CSFH2ZMK",
+          "youtubeId": null,
+          "video": null,
+          "images": [],
+          "files": []
+        },
+        {
           "id": "t-exercices-tinkercad",
           "title": "Robotique : mes exercices",
           "type": "page",
