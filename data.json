@@ -101,6 +101,16 @@
       "coursePrintFiles": [],
       "exercisePrintFiles": [],
       "date": "2026-11-14T16:20:09.097Z"
+    },
+    {
+      "id": "cours-4-la-configuration-materielle-d-un-reseau-mwpjsw5m",
+      "title": "Cours 4 : la configuration matérielle d'un réseau",
+      "unit": "u1",
+      "courseFile": "images/2APIC/cours-4-la-configuration-materielle-d-un-reseau-mwpjsw5m-cours.png",
+      "exerciseFile": "images/2APIC/cours-4-la-configuration-materielle-d-un-reseau-mwpjsw5m-exo.png",
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [],
+      "date": "2026-11-20T22:26:33.893Z"
     }
   ],
   "3APIC": [
