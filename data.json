@@ -164,6 +164,16 @@
         "images/3APIC/correction-du-controle-1-semestre-1-mwglo69m-exo-photocopie-1.jpg"
       ],
       "date": "2026-11-14T16:08:38.211Z"
+    },
+    {
+      "id": "cours-2-la-gestion-des-diapositives-mwpj7wlm",
+      "title": "Cours 2 : la gestion des diapositives",
+      "unit": "u2",
+      "courseFile": "images/3APIC/cours-2-la-gestion-des-diapositives-mwpj7wlm-cours.png",
+      "exerciseFile": null,
+      "coursePrintFiles": [],
+      "exercisePrintFiles": [],
+      "date": "2026-11-20T22:09:50.133Z"
     }
   ],
   "units": {
