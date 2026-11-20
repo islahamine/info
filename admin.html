@@ -194,6 +194,7 @@
         <option value="texte">📝 Texte</option>
         <option value="lien">🔗 Lien</option>
         <option value="fichier">📎 Fichier à télécharger</option>
+        <option value="page">🧩 Page du site</option>
       </select>
       <label>Titre de la carte</label>
       <input type="text" id="taskName" placeholder="ex: Exercice 1 : Allumer une LED">
@@ -211,6 +212,10 @@
       <div id="fieldsLink">
         <label>Lien</label>
         <input type="url" id="taskLinkInput" placeholder="ex: https://www.tinkercad.com">
+      </div>
+      <div id="fieldsPage">
+        <label>Adresse de la page</label>
+        <input type="text" id="taskPage" placeholder="ex: robotique/index.html">
       </div>
       <div id="fieldsFile">
         <label>Fichiers (20 Mo maximum par fichier)</label>
@@ -685,7 +690,7 @@
 
   // ---- Club Robotique ----
   const MAX_FILE_MB = 20;
-  const TYPE_LABELS = { video: '🎬 Vidéo', image: '🖼️ Image', texte: '📝 Texte', lien: '🔗 Lien', fichier: '📎 Fichier' };
+  const TYPE_LABELS = { video: '🎬 Vidéo', image: '🖼️ Image', texte: '📝 Texte', lien: '🔗 Lien', fichier: '📎 Fichier', page: '🧩 Page du site' };
   let club = { seances: [] };
   let clubSha = null;
   let editingSeanceId = null;
@@ -904,6 +909,7 @@
     $('fieldsImage').style.display = kind === 'image' ? 'block' : 'none';
     $('fieldsLink').style.display = kind === 'lien' ? 'block' : 'none';
     $('fieldsFile').style.display = kind === 'fichier' ? 'block' : 'none';
+    $('fieldsPage').style.display = kind === 'page' ? 'block' : 'none';
   }
   $('taskTypeInput').addEventListener('change', toggleTaskFields);
 
@@ -917,6 +923,7 @@
     $('taskTypeInput').value = 'video';
     $('taskTextInput').value = '';
     $('taskLinkInput').value = '';
+    $('taskPage').value = '';
     $('taskYoutube').value = '';
     $('taskVideoFile').value = '';
     $('taskImages').value = '';
@@ -935,6 +942,7 @@
     $('taskTypeInput').value = TYPE_LABELS[t.type] ? t.type : 'texte';
     $('taskTextInput').value = t.text || '';
     $('taskLinkInput').value = t.link || '';
+    $('taskPage').value = t.page || '';
     $('taskYoutube').value = t.youtubeId ? 'https://youtu.be/' + t.youtubeId : '';
     toggleTaskFields();
     const list = [...(t.images || []).map(p => ({ path: p, name: p.split('/').pop() })), ...(t.files || [])];
@@ -969,6 +977,8 @@
     let link = kind === 'lien' ? $('taskLinkInput').value.trim() : '';
     if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
     if (kind === 'lien' && !link) { setStatus('taskStatus', 'err', 'Veuillez écrire le lien.'); return; }
+    const page = kind === 'page' ? $('taskPage').value.trim().replace(/^\/+/, '') : '';
+    if (kind === 'page' && !/^[\w\-\/]+\.html$/i.test(page)) { setStatus('taskStatus', 'err', 'Écrivez l\'adresse d\'une page du site, par exemple robotique/index.html.'); return; }
     const images = kind === 'image' ? Array.from($('taskImages').files) : [];
     const files = kind === 'fichier' ? Array.from($('taskFiles').files) : [];
     const tooBig = [...files, ...(videoFile ? [videoFile] : [])].find(f => f.size > MAX_FILE_MB * 1024 * 1024);
@@ -995,6 +1005,7 @@
       task.type = kind;
       task.text = $('taskTextInput').value.trim();
       task.link = link;
+      task.page = page;
       task.youtubeId = ytId;
       task.images = (task.images || []).filter(p => !removedAttachments.includes(p));
       task.files = (task.files || []).filter(f => !removedAttachments.includes(f.path));

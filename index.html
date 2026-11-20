@@ -134,6 +134,7 @@
   .type-texte { --task-color: #ea580c; }
   .type-lien { --task-color: #0891b2; }
   .type-fichier { --task-color: #059669; }
+  .type-page { --task-color: #0891b2; }
   .task-video:empty { display: none; }
   .video-open { margin: 10px 0 0; background: #dc2626; }
   .task-video { margin-bottom: 14px; }
@@ -603,7 +604,8 @@
     image: { label: 'Image', icon: '🖼️', cls: 'type-image' },
     texte: { label: 'Texte', icon: '📝', cls: 'type-texte' },
     lien: { label: 'Lien', icon: '🔗', cls: 'type-lien' },
-    fichier: { label: 'Fichier', icon: '📎', cls: 'type-fichier' }
+    fichier: { label: 'Fichier', icon: '📎', cls: 'type-fichier' },
+    page: { label: 'Exercices', icon: '🧩', cls: 'type-page' }
   };
   const clubScreen = document.getElementById('clubScreen');
   const seanceScreen = document.getElementById('seanceScreen');
@@ -753,13 +755,22 @@
 
   function miniPath(path) { return path.replace(/\.jpg$/, '-mini.jpg'); }
 
+  function sitePage(path) {
+    return typeof path === 'string' && /^[\w\-\/]+\.(html|png|jpe?g)$/i.test(path) && !path.includes('..') ? path : null;
+  }
+
   function taskPreview(t) {
+    if (sitePage(t.preview)) return t.preview;
     if (t.youtubeId) return 'https://img.youtube.com/vi/' + encodeURIComponent(t.youtubeId) + '/mqdefault.jpg';
     if (t.images && t.images.length) return miniPath(t.images[0]);
     return null;
   }
 
   function openTask(t) {
+    if (t.type === 'page' && sitePage(t.page)) {
+      window.location.href = t.page;
+      return;
+    }
     // A lone image goes straight to the full-screen viewer
     if (t.images && t.images.length === 1 && !t.text && !t.link && !t.youtubeId && !t.video) {
       openViewer(t.images[0]);
@@ -882,6 +893,7 @@
   searchInput.addEventListener('input', renderCourses);
 
   refreshData();
+  if (location.hash === '#club') openClub();
 </script>
 
 </body>

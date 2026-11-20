@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pourquoi toutes les LED s'éteignent ? · Club de robotique</title>
+<link rel="stylesheet" href="assets/robotique.css">
+</head>
+<body>
+<style>
+  .site-head { background: #fff; color: #1a1a2e; border-bottom: 1px solid #e8e9ee; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .site-head .bar { display: flex; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px; max-width: 860px; margin: 0 auto; text-decoration: none; color: inherit; }
+  .site-head img { width: 54px; height: 54px; object-fit: contain; flex-shrink: 0; display: block; }
+  .site-head .school { flex: 1; text-align: center; min-width: 0; }
+  .site-head .college-name { font-size: 0.95rem; font-weight: 700; line-height: 1.2; }
+  .site-head .app-title { font-size: 0.78rem; color: #6b7280; margin-top: 1px; }
+  .site-head .site-back { display: block; max-width: 860px; margin: 0 auto; padding: 0 14px 10px; color: #4f46e5; font-weight: 600; font-size: 1rem; text-decoration: none; }
+</style>
+<div class="site-head">
+  <a class="bar" href="../index.html">
+    <img src="../assets/logo-ministere.png" alt="" onerror="this.style.visibility='hidden'">
+    <span class="school">
+      <span class="college-name">Collège Prince Moulay Rachid</span><br>
+      <span class="app-title">📚 Plateforme des cours</span>
+    </span>
+    <img src="../assets/logo-college.png" alt="" onerror="this.style.visibility='hidden'">
+  </a>
+  <a class="site-back" href="../index.html#club">‹ Club Robotique</a>
+</div>
+<header class="rb-head"><div class="wrap">
+  <a class="rb-back" href="index.html">◀ Robotique</a>
+  <div class="rb-kicker">Aide · Niveau 3</div>
+  <h1>Pourquoi toutes les LED s'éteignent ?</h1>
+  <p>J'appuie sur un bouton… et tout s'arrête. Je trouve l'erreur.</p>
+  
+</div></header>
+<main class="wrap">
+<section class="rb-sec"><h2><span class="rb-num" style="background:var(--red)">1</span>Le problème</h2><div class="card" style="display:grid;gap:12px"><div><img src="img/probleme-avant.png" alt="" loading="lazy" style="background:#fff;border-radius:10px"><p style="text-align:center;font-weight:700;margin:8px 0 0">Je n'appuie pas : les LED sont allumées.</p></div><div><img src="img/probleme-apres.png" alt="" loading="lazy" style="background:#fff;border-radius:10px"><p style="text-align:center;font-weight:700;margin:8px 0 0;color:var(--red)">J'appuie : tout s'éteint !</p></div></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--orange)">2</span>Pourquoi ?</h2><div class="card" style="font-size:19px">Le bouton est relié <b style="color:var(--red)">directement au + et au − de la pile</b>. Quand j'appuie, le courant passe par le bouton. Il ne passe plus par les LED. C'est un <b style="color:var(--red)">court-circuit</b>.</div><div class="rule" style="margin-top:10px"><span class="i">💧</span><div><b>Pour comprendre :</b> le courant est comme l'eau. Il prend toujours le chemin le plus facile.</div></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--green)">3</span>La règle</h2><div class="key" style="background:var(--green)">Le bouton se met dans le chemin de la LED. Jamais directement entre le + et le −.</div><div class="chain"><span class="chip" style="background:var(--red)">+ de la pile</span><span class="arrow">→</span><span class="chip" style="background:var(--orange)">bouton</span><span class="arrow">→</span><span class="chip" style="background:#B8894F">résistance</span><span class="arrow">→</span><span class="chip" style="background:var(--teal)">LED</span><span class="arrow">→</span><span class="chip" style="background:#1F2933">− de la pile</span></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--teal)">4</span>Je corrige, étape par étape</h2><div data-stepper><ol class="steps" style="--c:var(--teal)"><li><span class="n">1</span><span>J'arrête la simulation.</span></li><li><span class="n">2</span><span>Je supprime les fils du bouton.</span></li><li><span class="n">3</span><span>Je relie le + de la pile à une patte du bouton.</span></li><li><span class="n">4</span><span>Je relie la patte en diagonale à la résistance.</span></li><li><span class="n">5</span><span>Je relie la résistance à la patte longue de la LED.</span></li><li><span class="n">6</span><span>Je relie la patte courte de la LED au − de la pile.</span></li><li class="ok"><span class="n">7</span><span>Je teste : j'appuie, la LED s'allume.</span></li></ol></div><div class="card" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center"><img src="img/chemin-bouton.png" alt="Un bon chemin pour une LED" loading="lazy" style="background:#fff;border-radius:10px"><div><img src="img/astuce-bouton.png" alt="Astuce du bouton" loading="lazy" style="background:#fff;border-radius:10px;max-width:160px;margin:0 auto"><p style="font-size:16px;text-align:center;margin:8px 0 0"><b>Astuce :</b> je relie 2 pattes du bouton <b>en diagonale</b>.</p></div></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--navy)">5</span>Je fais les 3 chemins</h2><div class="card"><img src="img/trois-chemins.png" alt="Les 3 chemins corrects" loading="lazy" style="background:#fff;border-radius:10px"><p style="text-align:center;font-weight:700;margin:10px 0 0">Je refais les étapes 3 à 7 pour la LED verte, puis pour la LED bleue.</p></div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--green)">✓</span>Je vérifie</h2><div><ul class="check" data-check="aide"><li><label><input type="checkbox"><span>Je n'appuie sur rien : toutes les LED sont éteintes.</span></label></li><li><label><input type="checkbox"><span>J'appuie sur le bouton 1 : seulement sa LED s'allume.</span></label></li><li><label><input type="checkbox"><span>J'appuie sur le bouton 2 : seulement sa LED s'allume.</span></label></li><li><label><input type="checkbox"><span>J'appuie sur le bouton 3 : seulement sa LED s'allume.</span></label></li></ul><div class="bravo">🎉 Bravo ! Tu as corrigé le court-circuit.</div></div></section><div class="actions"><a class="btn orange" href="https://www.tinkercad.com/joinclass" target="_blank" rel="noopener">Ouvrir Tinkercad ↗</a><a class="btn ghost" href="img/fiche-aide-court-circuit.png" download>⬇ Télécharger la fiche</a></div>
+<details class="lex"><summary>📖 Lexique français → عربية</summary><table><tr><td>La pile</td><td class="ar" lang="ar">العمود الكهربائي</td></tr><tr><td>Le + / le − de la pile</td><td class="ar" lang="ar">القطب الموجب / القطب السالب</td></tr><tr><td>La LED</td><td class="ar" lang="ar">الصمام الثنائي الباعث للضوء</td></tr><tr><td>La patte longue / courte</td><td class="ar" lang="ar">الرجل الطويلة / القصيرة</td></tr><tr><td>La résistance</td><td class="ar" lang="ar">المقاومة (الموصل الأومي)</td></tr><tr><td>Le bouton-poussoir</td><td class="ar" lang="ar">الزر الضاغط</td></tr><tr><td>Le fil</td><td class="ar" lang="ar">السلك الموصل</td></tr><tr><td>Circuit fermé / ouvert</td><td class="ar" lang="ar">دارة مغلقة / مفتوحة</td></tr><tr><td>En série</td><td class="ar" lang="ar">على التوالي</td></tr><tr><td>En dérivation</td><td class="ar" lang="ar">على التوازي</td></tr><tr><td>Le court-circuit</td><td class="ar" lang="ar">الدارة القصيرة</td></tr></table></details>
+<nav class="pager"><a href="niveau-3.html"><small>◀ Précédent</small>Niveau 3</a><span style="flex:1"></span></nav>
+</main>
+<script src="assets/robotique.js"></script>
+</body>
+</html>

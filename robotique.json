@@ -6,7 +6,21 @@
       "date": "2026-10-30",
       "description": "je fabrique mon premier circuit électrique",
       "cover": null,
-      "tasks": []
+      "tasks": [
+        {
+          "id": "t-exercices-tinkercad",
+          "title": "Robotique : mes exercices",
+          "type": "page",
+          "text": "",
+          "link": "",
+          "youtubeId": null,
+          "video": null,
+          "images": [],
+          "files": [],
+          "page": "robotique/index.html",
+          "preview": "robotique/img/modele-niveau1-derivation.png"
+        }
+      ]
     }
   ]
 }

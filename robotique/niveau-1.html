@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2 LED : série et dérivation · Club de robotique</title>
+<link rel="stylesheet" href="assets/robotique.css">
+</head>
+<body>
+<style>
+  .site-head { background: #fff; color: #1a1a2e; border-bottom: 1px solid #e8e9ee; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .site-head .bar { display: flex; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px; max-width: 860px; margin: 0 auto; text-decoration: none; color: inherit; }
+  .site-head img { width: 54px; height: 54px; object-fit: contain; flex-shrink: 0; display: block; }
+  .site-head .school { flex: 1; text-align: center; min-width: 0; }
+  .site-head .college-name { font-size: 0.95rem; font-weight: 700; line-height: 1.2; }
+  .site-head .app-title { font-size: 0.78rem; color: #6b7280; margin-top: 1px; }
+  .site-head .site-back { display: block; max-width: 860px; margin: 0 auto; padding: 0 14px 10px; color: #4f46e5; font-weight: 600; font-size: 1rem; text-decoration: none; }
+</style>
+<div class="site-head">
+  <a class="bar" href="../index.html">
+    <img src="../assets/logo-ministere.png" alt="" onerror="this.style.visibility='hidden'">
+    <span class="school">
+      <span class="college-name">Collège Prince Moulay Rachid</span><br>
+      <span class="app-title">📚 Plateforme des cours</span>
+    </span>
+    <img src="../assets/logo-college.png" alt="" onerror="this.style.visibility='hidden'">
+  </a>
+  <a class="site-back" href="../index.html#club">‹ Club Robotique</a>
+</div>
+<header class="rb-head"><div class="wrap">
+  <a class="rb-back" href="index.html">◀ Robotique</a>
+  <div class="rb-kicker">Devoir à la maison</div>
+  <h1>2 LED : série et dérivation</h1>
+  <p>Je refais les 2 circuits sur Tinkercad, chez moi.</p>
+  <span class="rb-stars">★ Niveau 1</span>
+</div></header>
+<main class="wrap">
+<section class="rb-sec"><h2><span class="rb-num" style="background:var(--orange)">A</span>Montage en série</h2><div class="card"><div class="model"><img src="img/modele-niveau1-serie.png" alt="2 LED en série sur Tinkercad" loading="lazy"><span class="tag" style="left:58.5%;top:19%;background:#B8894F">Résistance ▶</span><span class="tag" style="left:77.5%;top:7%;background:var(--red)">LED 1 ▼</span><span class="tag" style="left:92%;top:22%;background:var(--red)">◀ LED 2</span><span class="tag" style="left:59.5%;top:50%;background:var(--red)">+</span><span class="tag" style="left:59.5%;top:74%;background:#1F2933">−</span></div><div class="zoom-hint">👆 Touche l'image pour l'agrandir</div></div><div style="height:12px"></div><div data-stepper><ol class="steps" style="--c:var(--orange)"><li><span class="n">1</span><span>Le + de la pile → la résistance.</span></li><li><span class="n">2</span><span>La résistance → la patte longue de la LED 1.</span></li><li><span class="n">3</span><span>La patte courte de la LED 1 → la patte longue de la LED 2.</span></li><li><span class="n">4</span><span>La patte courte de la LED 2 → le − de la pile.</span></li><li class="ok"><span class="n">5</span><span>Je touche « Démarrer la simulation ».</span></li></ol></div><div class="key" style="background:var(--orange)">Une seule résistance, un seul chemin.</div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--teal)">B</span>Montage en dérivation</h2><div class="card"><div class="model"><img src="img/modele-niveau1-derivation.png" alt="2 LED en dérivation sur Tinkercad" loading="lazy"><span class="tag" style="left:57.5%;top:18%;background:#B8894F">Résistance 1 ▶</span><span class="tag" style="left:77%;top:15%;background:#B8894F">Résistance 2 ▶</span><span class="tag" style="left:60%;top:51%;background:var(--red)">+</span><span class="tag" style="left:60%;top:75%;background:#1F2933">−</span></div><div class="zoom-hint">👆 Touche l'image pour l'agrandir</div></div><div style="height:12px"></div><div data-stepper><ol class="steps" style="--c:var(--teal)"><li><span class="n">1</span><span>Le + de la pile → la résistance 1 et la résistance 2.</span></li><li><span class="n">2</span><span>La résistance 1 → la patte longue de la LED 1.</span></li><li><span class="n">3</span><span>La résistance 2 → la patte longue de la LED 2.</span></li><li><span class="n">4</span><span>La patte courte de chaque LED → le − de la pile.</span></li><li class="ok"><span class="n">5</span><span>Je touche « Démarrer la simulation ».</span></li></ol></div><div class="key" style="background:var(--teal)">Chaque LED a sa résistance et son propre chemin.</div></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--green)">✓</span>Je teste et je compare</h2><table class="cmp"><tr><th style="background:var(--navy);border-radius:12px 0 0 12px;text-align:left">Je teste…</th><th style="background:var(--orange)">En série</th><th style="background:var(--teal);border-radius:0 12px 12px 0">En dérivation</th></tr><tr><td>Nombre de chemins</td><td class="reveal">1</td><td class="reveal">2</td></tr><tr><td>La lumière des LED</td><td class="reveal">faible</td><td class="reveal">forte</td></tr><tr><td>Je supprime une LED</td><td class="reveal">l'autre s'éteint</td><td class="reveal">l'autre reste allumée</td></tr></table><p style="margin:10px 0 0;font-size:16px;color:var(--text2)">Je teste d'abord les 2 montages, puis je regarde les réponses.</p><button type="button" class="btn" data-reveal style="margin-top:10px;width:100%">Voir les réponses</button></section><section class="rb-sec"><h2><span class="rb-num" style="background:var(--navy)">★</span>À retenir</h2><div class="rule"><span class="i">!</span><div><b></b> En série : 1 seul chemin. En dérivation : 1 chemin pour chaque LED.</div></div></section><div class="actions"><a class="btn orange" href="https://www.tinkercad.com/joinclass" target="_blank" rel="noopener">Ouvrir Tinkercad ↗</a><a class="btn ghost" href="img/fiche-niveau1.png" download>⬇ Télécharger la fiche</a></div>
+<details class="lex"><summary>📖 Lexique français → عربية</summary><table><tr><td>La pile</td><td class="ar" lang="ar">العمود الكهربائي</td></tr><tr><td>Le + / le − de la pile</td><td class="ar" lang="ar">القطب الموجب / القطب السالب</td></tr><tr><td>La LED</td><td class="ar" lang="ar">الصمام الثنائي الباعث للضوء</td></tr><tr><td>La patte longue / courte</td><td class="ar" lang="ar">الرجل الطويلة / القصيرة</td></tr><tr><td>La résistance</td><td class="ar" lang="ar">المقاومة (الموصل الأومي)</td></tr><tr><td>Le bouton-poussoir</td><td class="ar" lang="ar">الزر الضاغط</td></tr><tr><td>Le fil</td><td class="ar" lang="ar">السلك الموصل</td></tr><tr><td>Circuit fermé / ouvert</td><td class="ar" lang="ar">دارة مغلقة / مفتوحة</td></tr><tr><td>En série</td><td class="ar" lang="ar">على التوالي</td></tr><tr><td>En dérivation</td><td class="ar" lang="ar">على التوازي</td></tr><tr><td>Le court-circuit</td><td class="ar" lang="ar">الدارة القصيرة</td></tr></table></details>
+<nav class="pager"><span style="flex:1"></span><a class="next" href="niveau-2.html"><small>Suivant ▶</small>Niveau 2</a></nav>
+</main>
+<script src="assets/robotique.js"></script>
+</body>
+</html>
